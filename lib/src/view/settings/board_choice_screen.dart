@@ -29,11 +29,11 @@ class const _Body() extends ConsumerWidget {
     final hasSystemColors = getSystemCorePalettes() != null;
 
     final choices = BoardTheme.values
-        .where((t) => t != BoardTheme.system || hasSystemColors)
+        .where((t) => true)
         .toList();
 
     void onChanged(BoardTheme? value) =>
-        ref.read(boardPreferencesProvider.notifier).setBoardTheme(value ?? BoardTheme.brown);
+        ref.read(boardPreferencesProvider.notifier).setBoardTheme(value ?? BoardTheme.green);
 
     const checkedIcon = Icon(Icons.check);
 
