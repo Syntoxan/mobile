@@ -63,7 +63,7 @@ class GeneralPreferencesNotifier()
       ref
           .read(boardPreferencesProvider.notifier)
           .setBoardTheme(
-            newState.systemColors ? BoardTheme.system : BoardPrefs.defaults.boardTheme,
+        newState.systemColors ? BoardTheme.green : BoardPrefs.defaults.boardTheme,
           ),
     ]).then((_) => {});
   }
