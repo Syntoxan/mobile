@@ -70,8 +70,8 @@ class GameShareService(final Ref _ref) {
     bool chessClock = false,
   }) async {
     final boardPreferences = _ref.read(boardPreferencesProvider);
-    final boardTheme = boardPreferences.boardTheme == BoardTheme.system
-        ? BoardTheme.brown
+    final boardTheme = boardPreferences.boardTheme == BoardTheme.green
+        ? BoardTheme.green
         : boardPreferences.boardTheme;
     final pieceTheme = boardPreferences.pieceSet;
 
@@ -97,8 +97,8 @@ class GameShareService(final Ref _ref) {
   /// Fetches the GIF animation of a study chapter.
   Future<XFile> chapterGif(StringId id, StringId chapterId) async {
     final boardPreferences = _ref.read(boardPreferencesProvider);
-    final boardTheme = boardPreferences.boardTheme == BoardTheme.system
-        ? BoardTheme.brown
+    final boardTheme = boardPreferences.boardTheme == BoardTheme.green
+        ? BoardTheme.green
         : boardPreferences.boardTheme;
     final pieceTheme = boardPreferences.pieceSet;
 
