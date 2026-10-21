@@ -43,7 +43,7 @@ Future<void> initializeApp() async {
 
       // on android 12+ set board theme to system colors
       if (getSystemCorePalettes() != null) {
-        final boardPrefs = BoardPrefs.defaults.copyWith(boardTheme: BoardTheme.system);
+        final boardPrefs = BoardPrefs.defaults.copyWith(boardTheme: BoardTheme.green);
         await prefs.setString(PrefCategory.board.storageKey, jsonEncode(boardPrefs.toJson()));
       }
 
