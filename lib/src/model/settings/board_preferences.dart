@@ -260,19 +260,36 @@ enum ShapeColor() {
 
 /// The chessboard theme.
 enum BoardTheme(final String label, final String gifApiName) {
-  green('Green', 'green');
+  green('Green', 'green'),
+  pink('Pink', 'pink'),
+  midnight('Midnight', 'blue'),
+  classic('Classic', 'brown'),
+  lavender('Lavender', 'purple');
 
   ChessboardColorScheme get colors {
     switch (this) {
       case BoardTheme.green:
         return ChessboardColorScheme.green;
+      case BoardTheme.pink:
+        return ChessboardColorScheme.pink;
+      case BoardTheme.midnight:
+        return ChessboardColorScheme.midnight;
+      case BoardTheme.classic:
+        return ChessboardColorScheme.brown;
+      case BoardTheme.lavender:
+        return ChessboardColorScheme.lavender;
     }
   }
 
-  Widget get thumbnail => Image.asset(
-    'assets/board-thumbnails/$name.jpg',
+  Widget get thumbnail => SizedBox(
     height: 44,
-    errorBuilder: (context, o, st) => const SizedBox.shrink(),
+    width: 44 * 6,
+    child: Row(
+      children: [
+        for (final c in const [1, 2, 3, 4, 5, 6])
+          Container(width: 44, color: c.isEven ? colors.darkSquare : colors.lightSquare),
+      ],
+    ),
   );
 }
 
