@@ -14,7 +14,10 @@ dependencies:
   app_settings: ^9.0.0
   async: ^2.13.1
   auto_size_text: ^3.0.0
-  chessground: ^10.3.0
+  chessground:
+    git:
+      url: https://github.com/Syntoxan/flutter-chessground.git
+      ref: main
   clock: ^1.1.2
   collection: ^1.19.1
   connectivity_plus: ^7.3.1
@@ -152,3 +155,4 @@ flutter_native_splash:
 
   color_dark: "#000000"
   image_dark: assets/images/logo-white.webp
+  
