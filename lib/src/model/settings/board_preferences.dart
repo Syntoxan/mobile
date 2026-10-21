@@ -260,32 +260,7 @@ enum ShapeColor() {
 
 /// The chessboard theme.
 enum BoardTheme(final String label, final String gifApiName) {
-  system('System', 'system'),
-  brown('Brown', 'brown'),
-  wood('Wood', 'wood'),
-  wood2('Wood 2', 'wood2'),
-  wood3('Wood 3', 'wood3'),
-  wood4('Wood 4', 'wood4'),
-  maple('Maple', 'maple'),
-  maple2('Maple 2', 'maple2'),
-  blue('Blue', 'blue'),
-  blue2('Blue 2', 'blue2'),
-  blue3('Blue 3', 'blue3'),
-  blueMarble('Blue Marble', 'blue-marble'),
-  canvas('Canvas', 'canvas'),
-  leather('Leather', 'leather'),
-  ic('IC', 'ic'),
-  green('Green', 'green'),
-  marble('Marble', 'marble'),
-  greenPlastic('Green Plastic', 'green-plastic'),
-  grey('Grey', 'grey'),
-  metal('Metal', 'metal'),
-  olive('Olive', 'olive'),
-  newspaper('Newspaper', 'newspaper'),
-  purple('Purple', 'purple'),
-  purpleDiag('Purple-Diag', 'purple-diag'),
-  pinkPyramid('Pink', 'pink'),
-  horsey('Horsey', 'horsey');
+    green('Green', 'green');
 
   ChessboardColorScheme get colors {
     switch (this) {
