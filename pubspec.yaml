@@ -141,6 +141,9 @@ flutter:
     - family: LichessPuzzleIcons
       fonts:
         - asset: assets/fonts/PuzzleIcons.ttf
+    - family: Prata
+      fonts:
+        - asset: assets/fonts/Prata-Regular.ttf
 
   # Enable generation of localized Strings from arb files.
   generate: true
