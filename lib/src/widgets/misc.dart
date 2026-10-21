@@ -8,25 +8,13 @@ import 'package:url_launcher/url_launcher.dart';
 class const AppBarLichessTitle({super.key, final double iconSize = 24}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        children: [
-          WidgetSpan(
-            alignment: .bottom,
-            child: Icon(LichessIcons.logo_lichess, size: iconSize),
-          ),
-          const TextSpan(text: ' lichess'),
-          TextSpan(
-            text: '.org',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
-          ),
-        ],
-      ),
+    return const Text(
+      'SYNTOXAN',
       maxLines: 1,
+      style: TextStyle(fontFamily: 'Prata', letterSpacing: 2.0),
     );
   }
 }
-
 /// A widget that displays a title in the app bar with auto-sizing text.
 class const AppBarTitleText(
   final String text, {
