@@ -245,7 +245,7 @@ class _BodyState() extends ConsumerState<_Body> {
                           ? PieceOrientationBehavior.sideToPlay
                           : PieceOrientationBehavior.opponentUpsideDown,
                       pieceAssets: overTheBoardPrefs.symmetricPieces
-                          ? PieceSet.symmetric.assets
+                          ? PieceSet.cburnett.assets
                           : null,
                       enablePremoves: false,
                       blindfoldMode: blindfoldMode,
