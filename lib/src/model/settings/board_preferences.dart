@@ -137,7 +137,7 @@ sealed class const BoardPrefs._() with _$BoardPrefs implements Serializable {
   const factory({
     @JsonKey(defaultValue: PieceSet.cburnett, unknownEnumValue: PieceSet.cburnett)
     required PieceSet pieceSet,
-    @JsonKey(defaultValue: BoardTheme.brown, unknownEnumValue: BoardTheme.brown)
+    @JsonKey(defaultValue: BoardTheme.green, unknownEnumValue: BoardTheme.green)
     required BoardTheme boardTheme,
     bool? immersiveModeWhilePlaying,
     required bool hapticFeedback,
@@ -183,7 +183,7 @@ sealed class const BoardPrefs._() with _$BoardPrefs implements Serializable {
 
   static const defaults = BoardPrefs(
     pieceSet: PieceSet.cburnett,
-    boardTheme: BoardTheme.brown,
+    boardTheme: BoardTheme.green,
     immersiveModeWhilePlaying: false,
     hapticFeedback: true,
     showLegalMoves: true,
@@ -260,100 +260,20 @@ enum ShapeColor() {
 
 /// The chessboard theme.
 enum BoardTheme(final String label, final String gifApiName) {
-    green('Green', 'green');
+  green('Green', 'green');
 
   ChessboardColorScheme get colors {
     switch (this) {
-      case BoardTheme.system:
-        return getBoardColorScheme() ?? ChessboardColorScheme.brown;
-      case BoardTheme.blue:
-        return ChessboardColorScheme.blue;
-      case BoardTheme.blue2:
-        return ChessboardColorScheme.blue2;
-      case BoardTheme.blue3:
-        return ChessboardColorScheme.blue3;
-      case BoardTheme.blueMarble:
-        return ChessboardColorScheme.blueMarble;
-      case BoardTheme.canvas:
-        return ChessboardColorScheme.canvas;
-      case BoardTheme.wood:
-        return ChessboardColorScheme.wood;
-      case BoardTheme.wood2:
-        return ChessboardColorScheme.wood2;
-      case BoardTheme.wood3:
-        return ChessboardColorScheme.wood3;
-      case BoardTheme.wood4:
-        return ChessboardColorScheme.wood4;
-      case BoardTheme.maple:
-        return ChessboardColorScheme.maple;
-      case BoardTheme.maple2:
-        return ChessboardColorScheme.maple2;
-      case BoardTheme.brown:
-        return ChessboardColorScheme.brown;
-      case BoardTheme.leather:
-        return ChessboardColorScheme.leather;
-      case BoardTheme.ic:
-        return ChessboardColorScheme.ic;
       case BoardTheme.green:
         return ChessboardColorScheme.green;
-      case BoardTheme.marble:
-        return ChessboardColorScheme.marble;
-      case BoardTheme.greenPlastic:
-        return ChessboardColorScheme.greenPlastic;
-      case BoardTheme.grey:
-        return ChessboardColorScheme.grey;
-      case BoardTheme.metal:
-        return ChessboardColorScheme.metal;
-      case BoardTheme.olive:
-        return ChessboardColorScheme.olive;
-      case BoardTheme.newspaper:
-        return ChessboardColorScheme.newspaper;
-      case BoardTheme.purple:
-        return ChessboardColorScheme.purple;
-      case BoardTheme.purpleDiag:
-        return ChessboardColorScheme.purpleDiag;
-      case BoardTheme.pinkPyramid:
-        return ChessboardColorScheme.pinkPyramid;
-      case BoardTheme.horsey:
-        return ChessboardColorScheme.horsey;
     }
   }
 
-  Widget get thumbnail => switch (this) {
-    BoardTheme.system => SizedBox(
-      height: 44,
-      width: 44 * 6,
-      child: Row(
-        children: [
-          for (final c in const [1, 2, 3, 4, 5, 6])
-            Container(
-              width: 44,
-              color: c.isEven
-                  ? BoardTheme.system.colors.darkSquare
-                  : BoardTheme.system.colors.lightSquare,
-            ),
-        ],
-      ),
-    ),
-    BoardTheme.ic => SizedBox(
-      height: 44,
-      width: 44 * 6,
-      child: Row(
-        children: [
-          for (final c in const [1, 2, 3, 4, 5, 6])
-            Container(
-              width: 44,
-              color: c.isEven ? BoardTheme.ic.colors.darkSquare : BoardTheme.ic.colors.lightSquare,
-            ),
-        ],
-      ),
-    ),
-    _ => Image.asset(
-      'assets/board-thumbnails/$name.jpg',
-      height: 44,
-      errorBuilder: (context, o, st) => const SizedBox.shrink(),
-    ),
-  };
+  Widget get thumbnail => Image.asset(
+    'assets/board-thumbnails/$name.jpg',
+    height: 44,
+    errorBuilder: (context, o, st) => const SizedBox.shrink(),
+  );
 }
 
 enum MaterialDifferenceFormat() {
