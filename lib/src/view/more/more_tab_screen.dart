@@ -181,15 +181,7 @@ class const _Body() extends ConsumerWidget {
             ListSection(
               hasLeading: true,
               children: [
-                ListTile(
-                  leading: PatronIcon(color: 10, size: IconTheme.of(context).size),
-                  title: Text(context.l10n.patronDonate),
-                  subtitle: Text(context.l10n.patronBecomePatron),
-                  enabled: isOnline,
-                  onTap: () {
-                    launchUrl(Uri.parse('https://lichess.org/patron'));
-                  },
-                ),
+                
                 ListTile(
                   leading: const Icon(Icons.info_outline),
                   title: Text(context.l10n.about),
@@ -199,10 +191,7 @@ class const _Body() extends ConsumerWidget {
                 ),
               ],
             ),
-          Padding(
-            padding: Styles.bodySectionPadding,
-            child: LichessMessage(style: TextTheme.of(context).bodyMedium),
-          ),
+          
         ],
       ),
     );
