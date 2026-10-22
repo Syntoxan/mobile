@@ -144,9 +144,9 @@ flutter:
     - family: Prata
       fonts:
         - asset: assets/fonts/Prata-Regular.ttf
-    - family: Manrope
+    - family: AdobeClean
       fonts:
-        - asset: assets/fonts/Manrope-Regular.ttf
+        - asset: assets/fonts/AdobeClean-SemiLight.otf
     - family: InstrumentSerif
       fonts:
         - asset: assets/fonts/InstrumentSerif-Regular.ttf
