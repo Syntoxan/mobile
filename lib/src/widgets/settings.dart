@@ -162,7 +162,12 @@ class const SettingsSectionTitle(final String title, {super.key}) extends Statel
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textShade(context, 0.5)),
+            style: TextStyle(
+        fontFamily: 'InstrumentSerif',
+        fontSize: 20,
+        fontWeight: FontWeight.w400,
+        color: textShade(context, 0.5),
+      ),
     );
   }
 }
