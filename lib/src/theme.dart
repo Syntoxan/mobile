@@ -133,8 +133,8 @@ ThemeData _makeDefaultTheme(
   final isAmoled = themeMode == BackgroundThemeMode.amoled;
 
   final finalTheme = theme.copyWith(
-        textTheme: theme.textTheme.apply(fontFamily: 'Manrope'),
-    primaryTextTheme: theme.primaryTextTheme.apply(fontFamily: 'Manrope'),
+            textTheme: theme.textTheme.apply(fontFamily: 'AdobeClean'),
+    primaryTextTheme: theme.primaryTextTheme.apply(fontFamily: 'AdobeClean'),
     cupertinoOverrideTheme: _makeCupertinoThemeData(theme.colorScheme, brightness),
     splashFactory: isIOS ? NoSplash.splashFactory : null,
     appBarTheme: _appBarTheme.copyWith(
