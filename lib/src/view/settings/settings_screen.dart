@@ -170,28 +170,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
                   Navigator.of(context).push(AppLogSettingsScreen.buildRoute());
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.star_outline),
-                title: Text(context.l10n.mobileRateThisApp),
-                onTap: () async {
-                  final isAndroid = Theme.of(context).platform == TargetPlatform.android;
-                  final launched = await launchUrl(
-                    isAndroid
-                        ? Uri.parse('market://details?id=org.lichess.mobileV2')
-                        : Uri.parse('https://apps.apple.com/us/app/lichess/id1662361230'),
-                    mode: LaunchMode.externalApplication,
-                  );
-                  if (!launched && isAndroid) {
-                    launchUrl(
-                      Uri.parse(
-                        'https://play.google.com/store/apps/details?id=org.lichess.mobileV2',
-                      ),
-                      mode: LaunchMode.externalApplication,
-                    );
-                  }
-                },
-                trailing: const OpenInNewIcon(),
-              ),
+              
             ],
           ),
           if (authUser != null)
