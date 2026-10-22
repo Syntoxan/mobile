@@ -144,6 +144,12 @@ flutter:
     - family: Prata
       fonts:
         - asset: assets/fonts/Prata-Regular.ttf
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-Regular.ttf
+    - family: InstrumentSerif
+      fonts:
+        - asset: assets/fonts/InstrumentSerif-Regular.ttf
 
   # Enable generation of localized Strings from arb files.
   generate: true
