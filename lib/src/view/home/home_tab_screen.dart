@@ -242,12 +242,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
                     shouldShow: hasServerContent && hasFeaturedTournaments,
                     child: FeaturedTournamentsWidget(featured: featuredTournaments),
                   ),
-                  if (_worker != null && !isKidMode)
-                    _EditableWidget(
-                      widget: HomeEditableWidget.blogCarousel,
-                      shouldShow: hasServerContent,
-                      child: _BlogCarouselWidget(blogPosts, _worker!),
-                    ),
+                  
                 ],
               ];
             } else if (isTablet) {
@@ -287,12 +282,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
                         children: [
                           const SizedBox(height: 8.0),
                           FeaturedTournamentsWidget(featured: featuredTournaments),
-                          if (_worker != null && !isKidMode)
-                            _EditableWidget(
-                              widget: HomeEditableWidget.blogCarousel,
-                              shouldShow: hasServerContent,
-                              child: _BlogCarouselWidget(blogPosts, _worker!),
-                            ),
+                          
                           RecentGamesWidget(
                             recentGames: recentGames,
                             nbOfGames: nbOfGames,
@@ -349,12 +339,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
                   shouldShow: hasServerContent && hasFeaturedTournaments,
                   child: FeaturedTournamentsWidget(featured: featuredTournaments),
                 ),
-                if (_worker != null && !isKidMode)
-                  _EditableWidget(
-                    widget: HomeEditableWidget.blogCarousel,
-                    shouldShow: hasServerContent,
-                    child: _BlogCarouselWidget(blogPosts, _worker!),
-                  ),
+                
                 _EditableWidget(
                   widget: HomeEditableWidget.recentGames,
                   shouldShow: true,
