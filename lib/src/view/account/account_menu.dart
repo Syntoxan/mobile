@@ -4,13 +4,11 @@ import 'package:flutter_riverpod/experimental/mutation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lichess_mobile/src/model/account/account_repository.dart';
 import 'package:lichess_mobile/src/model/auth/auth_controller.dart';
-import 'package:lichess_mobile/src/model/common/preloaded_data.dart';
 import 'package:lichess_mobile/src/model/message/message_repository.dart';
 import 'package:lichess_mobile/src/model/team/team_providers.dart';
 import 'package:lichess_mobile/src/model/user/user.dart';
 import 'package:lichess_mobile/src/network/connectivity.dart';
 import 'package:lichess_mobile/src/network/http.dart';
-import 'package:lichess_mobile/src/styles/lichess_icons.dart';
 import 'package:lichess_mobile/src/styles/styles.dart';
 import 'package:lichess_mobile/src/utils/http_network_image.dart';
 import 'package:lichess_mobile/src/utils/l10n_context.dart';
@@ -240,30 +238,6 @@ class _AccountMenuScreenState()
                 },
             ],
           ),
-          ListSection(
-            children: [
-              if (Theme.of(context).platform == TargetPlatform.android)
-                ListTile(
-                  leading: Icon(
-                    LichessIcons.patron,
-                    semanticLabel: context.l10n.patronLichessPatron,
-                  ),
-                  title: Text(context.l10n.patronDonate),
-                  enabled: isOnline,
-                  onTap: () => launchUrl(Uri.parse('https://lichess.org/patron')),
-                ),
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                title: Text(context.l10n.about),
-                onTap: () {
-                  _navigate(context, AboutScreen.buildRoute());
-                },
-              ),
-            ],
-          ),
           const SocketPingRatingListTile(),
         ],
       ),
@@ -401,148 +375,5 @@ class _AccountMenuButtonState() extends ConsumerState<AccountMenuButton> {
         onPressed: openMenu,
       ),
     };
-  }
-}
-
-/// About screen with links to various lichess resources and legal information.
-class const AboutScreen({super.key}) extends ConsumerWidget {
-  static Route<void> buildRoute() {
-    return buildScreenRoute(screen: const AboutScreen());
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isOnline = ref.watch(isDeviceOnlineProvider);
-    final packageInfo = ref.read(preloadedDataProvider).requireValue.packageInfo;
-
-    return PlatformScaffold(
-      appBar: PlatformAppBar(title: Text(context.l10n.about)),
-      body: ListView(
-        children: [
-          ListSection(
-            hasLeading: true,
-            children: [
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Icons.info_outlined),
-                title: Text(context.l10n.aboutX('Lichess')),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://lichess.org/about'));
-                },
-              ),
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Icons.feedback_outlined),
-                title: Text(context.l10n.mobileFeedbackButton),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://lichess.org/contact'));
-                },
-              ),
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Icons.article_outlined),
-                title: Text(context.l10n.termsOfService),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://lichess.org/terms-of-service'));
-                },
-              ),
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Icons.privacy_tip_outlined),
-                title: Text(context.l10n.privacyPolicy),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://lichess.org/privacy'));
-                },
-              ),
-            ],
-          ),
-          ListSection(
-            hasLeading: true,
-            children: [
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Symbols.database),
-                title: Text(context.l10n.database),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://database.lichess.org'));
-                },
-              ),
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Icons.code_outlined),
-                title: Text(context.l10n.sourceCode),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://lichess.org/source'));
-                },
-              ),
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Icons.bug_report_outlined),
-                title: Text(context.l10n.contribute),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://lichess.org/help/contribute'));
-                },
-              ),
-              ListTile(
-                enabled: isOnline,
-                leading: const Icon(Icons.star_border_outlined),
-                title: Text(context.l10n.thankYou),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  launchUrl(Uri.parse('https://lichess.org/thanks'));
-                },
-              ),
-            ],
-          ),
-          ListSection(
-            hasLeading: true,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.copyright_outlined),
-                title: Text(context.l10n.mobileViewLicenses),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
-                onTap: () {
-                  showLicensePage(
-                    context: context,
-                    applicationName: 'Lichess',
-                    applicationVersion: packageInfo.version,
-                    applicationIcon: const Icon(LichessIcons.logo_lichess),
-                  );
-                },
-              ),
-            ],
-          ),
-          Padding(
-            padding: Styles.bodySectionPadding,
-            child: Text('v${packageInfo.version}', style: TextTheme.of(context).bodySmall),
-          ),
-        ],
-      ),
-    );
   }
 }
