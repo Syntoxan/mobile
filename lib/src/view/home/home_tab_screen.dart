@@ -166,22 +166,14 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
             final hasServerContent = isOnline && !isServerUnavailable;
             final showOutage = isServerUnavailable && !widget.editModeEnabled;
 
-            final featuredTournaments = hasServerContent
-                ? ref.watch(featuredTournamentsProvider)
-                : const AsyncValue.data(IListConst<LightTournament>([]));
-            final blogPosts = hasServerContent
-                ? ref.watch(blogCarouselProvider)
-                : const AsyncValue.data(IListConst<BlogPost>([]));
+            
             final followingAsync = authUser != null && hasServerContent
                 ? ref.watch(followingCarouselProvider)
                 : const AsyncValue.data(IListConst<FollowingUser>([]));
 
             // Widgets whose content can be empty should not show a checkbox in
             // edit mode when there is nothing to display next to it.
-            final hasFeaturedTournaments = featuredTournaments.maybeWhen(
-              data: (tournaments) => tournaments.any((t) => t.isSupportedInApp),
-              orElse: () => true,
-            );
+            
             final hasFollowing = followingAsync.maybeWhen(
               data: (following) => following.isNotEmpty,
               orElse: () => true,
@@ -409,7 +401,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
         if (isOnline) ref.refresh(unreadMessagesProvider.future),
         if (isOnline) ref.refresh(accountProvider.future),
         if (isOnline) ref.refresh(ongoingGamesProvider.future),
-        if (isOnline) ref.refresh(featuredTournamentsProvider.future),
+        
         if (isOnline) ref.refresh(followingCarouselProvider.future),
       ]);
     } catch (_) {
