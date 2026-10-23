@@ -45,7 +45,7 @@ class _SyntoxanTitleState extends State<SyntoxanTitle>
     final textStyle = (widget.style ??
             const TextStyle(
               fontFamily: 'Prata',
-              fontSize: 22,
+              fontSize: 20,
               letterSpacing: 1.5,
             ))
         .copyWith(color: Colors.white);
