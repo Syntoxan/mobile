@@ -50,7 +50,7 @@ import 'package:lichess_mobile/src/view/play/play_menu.dart';
 import 'package:lichess_mobile/src/view/play/quick_game_matrix.dart';
 import 'package:lichess_mobile/src/view/tournament/tournament_list_screen.dart';
 import 'package:lichess_mobile/src/view/user/challenge_requests_screen.dart';
-import 'package:lichess_mobile/src/view/user/recent_games.dart';
+
 import 'package:lichess_mobile/src/widgets/buttons.dart';
 import 'package:lichess_mobile/src/widgets/feedback.dart';
 import 'package:lichess_mobile/src/widgets/haptic_refresh_indicator.dart';
@@ -152,7 +152,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
             final ongoingGames = ref.watch(ongoingGamesProvider);
             final offlineCorresGames = ref.watch(offlineOngoingCorrespondenceGamesProvider);
             final recentGames = ref.watch(myRecentGamesProvider);
-            final nbOfGames = ref.watch(userNumberOfGamesProvider(null)).value ?? 0;
+            
             final isTablet = isTabletOrLarger(context);
 
             // Everything the lichess server provides is unavailable both when the
@@ -271,11 +271,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
                           const SizedBox(height: 8.0),
                           
                           
-                          RecentGamesWidget(
-                            recentGames: recentGames,
-                            nbOfGames: nbOfGames,
-                            user: null,
-                          ),
+                          
                         ],
                       ),
                     ),
@@ -324,15 +320,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
                 ),
                 
                 
-                _EditableWidget(
-                  widget: HomeEditableWidget.recentGames,
-                  shouldShow: true,
-                  child: RecentGamesWidget(
-                    recentGames: recentGames,
-                    nbOfGames: nbOfGames,
-                    user: null,
-                  ),
-                ),
+                
               ];
             }
 
