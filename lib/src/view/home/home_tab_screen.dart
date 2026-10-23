@@ -599,36 +599,7 @@ class const _TabletCreateAGameSection() extends StatelessWidget {
   }
 }
 
-class const _BlogCarouselWidget(
-  final AsyncValue<IList<BlogPost>> posts,
-  final ImageColorWorker worker,
-) extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: Styles.verticalBodyPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: Styles.horizontalBodyPadding,
-            child: ListSectionHeader(title: Text(context.l10n.blog)),
-          ),
-          switch (posts) {
-            AsyncData(:final value) => BlogCarousel(posts: value, worker: worker),
-            AsyncError() => const Padding(
-              padding: Styles.bodySectionPadding,
-              child: Text('Could not load blog posts.'),
-            ),
-            _ => Shimmer(
-              child: ShimmerLoading(isLoading: true, child: BlogCarousel.loading(worker: worker)),
-            ),
-          },
-        ],
-      ),
-    );
-  }
-}
+
 
 class const _OngoingGamesCarousel(
   final AsyncValue<IList<OngoingGame>> games, {
