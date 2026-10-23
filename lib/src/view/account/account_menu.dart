@@ -340,10 +340,7 @@ class _AccountMenuButtonState() extends ConsumerState<AccountMenuButton> {
               : null,
           tooltip: value == null ? context.l10n.signIn : value.username,
           icon: value == null
-              ? Icon(
-                  Icons.account_circle_outlined,
-                  size: isIOS ? _cupertinoAnonIconSize : _materialAnonIconSize,
-                )
+                            ? const SynGhostIcon(size: 26.8)
               : CircleAvatar(
                   radius: isIOS ? _cupertinoAvatarRadius : _materialAnonIconSize / 2 + 1,
                   foregroundImage: value.flair != null && !_errorLoadingFlair
