@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/experimental/mutation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:lichess_mobile/src/binding.dart';
 import 'package:lichess_mobile/src/model/account/account_repository.dart';
 import 'package:lichess_mobile/src/model/account/home_preferences.dart';
@@ -32,8 +32,8 @@ import 'package:lichess_mobile/src/utils/navigation.dart';
 import 'package:lichess_mobile/src/utils/screen.dart';
 import 'package:lichess_mobile/src/view/account/account_menu.dart';
 import 'package:lichess_mobile/src/view/account/profile_screen.dart';
-import 'package:lichess_mobile/src/view/auth/sign_in_error.dart';
-import 'package:lichess_mobile/src/view/auth/sign_in_options.dart';
+
+
 import 'package:lichess_mobile/src/view/correspondence/offline_correspondence_game_screen.dart';
 import 'package:lichess_mobile/src/view/game/game_screen.dart';
 import 'package:lichess_mobile/src/view/game/game_screen_providers.dart';
@@ -192,10 +192,7 @@ class _HomeScreenState() extends ConsumerState<HomeTabScreen> {
                 if (showOutage) const ServerOutageDisplay(),
                 if (!widget.editModeEnabled) ...[
                   
-                  if (authUser == null) ...[
-                    const Center(child: _SignInWidget()),
-                    const SizedBox(height: 16.0),
-                  ],
+                  
                   
                   const _HomeCustomizationTip(),
                 ],
@@ -438,22 +435,7 @@ class const _LichessMessageBanner() extends ConsumerWidget {
   }
 }
 
-class const _SignInWidget() extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final signInState = ref.watch(signInMutation);
 
-    ref.listen(signInMutation, (_, next) => showSignInErrorSnackBar(context, next));
-
-    return FilledButton(
-      onPressed: switch (signInState) {
-        MutationPending() => null,
-        _ => () => showSignInOptions(context, ref),
-      },
-      child: Text(context.l10n.signIn),
-    );
-  }
-}
 
 /// A widget that can be enabled or disabled by the user.
 ///
