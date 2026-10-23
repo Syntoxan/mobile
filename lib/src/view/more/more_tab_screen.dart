@@ -31,7 +31,6 @@ import 'package:lichess_mobile/src/widgets/platform.dart';
 import 'package:lichess_mobile/src/widgets/settings.dart';
 import 'package:lichess_mobile/src/widgets/user.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class const MoreTabScreen({super.key}) extends ConsumerWidget {
   @override
@@ -177,21 +176,6 @@ class const _Body() extends ConsumerWidget {
             ],
           ),
           const _AccountSection(),
-          if (Theme.of(context).platform == TargetPlatform.android)
-            ListSection(
-              hasLeading: true,
-              children: [
-                
-                ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: Text(context.l10n.about),
-                  onTap: () {
-                    Navigator.of(context, rootNavigator: true).push(AboutScreen.buildRoute());
-                  },
-                ),
-              ],
-            ),
-          
         ],
       ),
     );
