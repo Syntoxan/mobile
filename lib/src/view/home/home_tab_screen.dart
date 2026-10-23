@@ -56,7 +56,7 @@ import 'package:lichess_mobile/src/widgets/list.dart';
 import 'package:lichess_mobile/src/widgets/misc.dart';
 import 'package:lichess_mobile/src/widgets/platform.dart';
 import 'package:lichess_mobile/src/widgets/server_outage_display.dart';
-
+import 'package:lichess_mobile/src/widgets/syntoxan_title.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -539,7 +539,7 @@ class const _GreetingWidget(
         : isDayTime
         ? context.l10n.mobileGoodDayWithoutName
         : context.l10n.mobileGoodEveningWithoutName;
-    final greeting = '${isDayTime ? '☀️' : '🌙'} $text';
+    
 
     void openProfile() {
       ref.invalidate(accountProvider);
@@ -549,14 +549,26 @@ class const _GreetingWidget(
     return InkWell(
       onTap: user != null ? openProfile : null,
       borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-      child: Text(
-        greeting,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        // On iOS, smaller than the large title of the other tabs, so that the greeting fits.
-        style: Theme.of(context).platform == TargetPlatform.iOS
-            ? TextTheme.of(context).titleLarge
-            : null,
+            child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(isDayTime ? '☀️' : '🌙'),
+          const SizedBox(width: 8),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: SyntoxanTitle(
+                text: text,
+                style: const TextStyle(
+                  fontFamily: 'Prata',
+                  fontSize: 21,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
