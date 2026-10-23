@@ -368,10 +368,7 @@ class _AccountMenuButtonState() extends ConsumerState<AccountMenuButton> {
                 height: _cupertinoButtonSize,
               )
             : null,
-        icon: Icon(
-          Icons.account_circle_outlined,
-          size: isIOS ? _cupertinoAnonIconSize : _materialAnonIconSize,
-        ),
+                icon: const SynGhostIcon(size: 26.8),
         tooltip: context.l10n.signIn,
         onPressed: openMenu,
       ),
