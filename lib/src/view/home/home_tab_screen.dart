@@ -549,7 +549,7 @@ class const _GreetingWidget(
     return InkWell(
       onTap: user != null ? openProfile : null,
       borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-            child: Row(
+                  child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(isDayTime ? '☀️' : '🌙'),
@@ -559,11 +559,12 @@ class const _GreetingWidget(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: SyntoxanTitle(
-                text: text,
+                text: text.toUpperCase(),
                 style: const TextStyle(
-                  fontFamily: 'Prata',
-                  fontSize: 21,
-                  letterSpacing: 1.5,
+                  fontFamily: 'InstrumentSerif',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 1.0,
                 ),
               ),
             ),
