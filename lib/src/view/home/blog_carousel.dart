@@ -81,50 +81,7 @@ class _BlogCarouselState() extends State<BlogCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final flexWeights = BlogCarousel.flexWeights(constraints.maxWidth);
-        final widgetWidth = constraints.maxWidth;
-        final elementWidth = widgetWidth * flexWeights[0] / flexWeights.reduce((a, b) => a + b);
-        final pictureHeight = elementWidth / 2;
-        const elementHeightFactor = 0.65;
-        final infoHeight = math.max(120, pictureHeight * elementHeightFactor);
-        final elementHeight = pictureHeight + infoHeight;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: elementHeight + kBlogCarouselItemPadding.vertical,
-            ),
-            child: CarouselView.weighted(
-              controller: _controller,
-              shape: const RoundedRectangleBorder(borderRadius: Styles.cardBorderRadius),
-              elevation: Theme.of(context).platform == TargetPlatform.iOS ? 0 : 1,
-              flexWeights: flexWeights,
-              itemSnapping: true,
-              padding: kBlogCarouselItemPadding,
-              enableSplash: false,
-              children: [
-                if (widget._isLoading)
-                  for (final _ in [1, 2, 3, 4, 5, 6, 7, 8, 9])
-                    BlogCarouselItem.loading(
-                      carouselWidth: widgetWidth,
-                      worker: widget.worker,
-                      flexWeights: flexWeights,
-                    ),
-                for (final post in widget.posts)
-                  BlogCarouselItem(
-                    carouselWidth: widgetWidth,
-                    post: post,
-                    worker: widget.worker,
-                    flexWeights: flexWeights,
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+        return const SizedBox.shrink();
   }
 }
 
