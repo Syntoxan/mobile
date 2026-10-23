@@ -558,7 +558,7 @@ class const _GreetingWidget(
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: SyntoxanTitle(
+              child: GreetingTitle(
                 text: text.toUpperCase(),
                 style: const TextStyle(
                   fontFamily: 'InstrumentSerif',
