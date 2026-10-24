@@ -17,6 +17,7 @@ import 'package:lichess_mobile/src/model/game/material_diff.dart';
 import 'package:lichess_mobile/src/model/game/over_the_board_game.dart';
 import 'package:lichess_mobile/src/model/over_the_board/over_the_board_clock.dart';
 import 'package:lichess_mobile/src/service/move_feedback.dart';
+import 'package:lichess_mobile/src/service/sound_service.dart';
 
 part 'over_the_board_game_controller.freezed.dart';
 
@@ -64,10 +65,12 @@ class OverTheBoardGameController() extends Notifier<OverTheBoardGameState> {
     state = state.copyWith(
       game: state.game.copyWith(status: GameStatus.resign, winner: state.turn.opposite),
     );
+    _playEndSound();
   }
 
   void draw() {
     state = state.copyWith(game: state.game.copyWith(status: GameStatus.draw));
+    _playEndSound();
   }
 
   void makeMove(Move move) {
@@ -134,12 +137,16 @@ class OverTheBoardGameController() extends Notifier<OverTheBoardGameState> {
     }
 
     _moveFeedback(sanMove);
+    if (!state.game.playable) {
+      _playEndSound();
+    }
   }
 
   void onFlag(Side side) {
     state = state.copyWith(
       game: state.game.copyWith(status: GameStatus.outoftime, winner: side.opposite),
     );
+    _playEndSound();
   }
 
   void goForward() {
@@ -155,14 +162,17 @@ class OverTheBoardGameController() extends Notifier<OverTheBoardGameState> {
   }
 
   void _moveFeedback(SanMove sanMove) {
-    final isCheck = sanMove.san.contains('+');
-    if (sanMove.san.contains('x')) {
-      ref
-          .read(moveFeedbackServiceProvider)
-          .captureFeedback(state.game.meta.variant, check: isCheck);
-    } else {
-      ref.read(moveFeedbackServiceProvider).moveFeedback(check: isCheck);
-    }
+    ref
+        .read(moveFeedbackServiceProvider)
+        .playedMove(sanMove.san, variant: state.game.meta.variant);
+  }
+
+  void _playEndSound() {
+    final endSound = state.game.winner == null ? Sound.gameDraw : Sound.gameWin;
+    Future<void>.delayed(const Duration(milliseconds: 500), () {
+      if (!ref.mounted) return;
+      ref.read(soundServiceProvider).play(endSound);
+    });
   }
 }
 
