@@ -560,7 +560,7 @@ class const _GreetingWidget(
             child: OverflowBox(
               maxWidth: 64,
               maxHeight: 64,
-              child: isDayTime ? const SunIcon() : const MoonIcon(),
+              child: isDayTime ? const SunIcon(size: 60) : const MoonIcon(),
             ),
           ),
           const SizedBox(width: 8),
