@@ -622,17 +622,28 @@ class GameController(final GameFullId gameFullId)
     }
   }
 
-  void _moveFeedback(SanMove sanMove) {
-    final isCheck = sanMove.san.contains('+');
-    if (sanMove.san.contains('x')) {
-      ref
-          .read(moveFeedbackServiceProvider)
-          .captureFeedback(state.requireValue.game.meta.variant, check: isCheck);
+    void _moveFeedback(SanMove sanMove) {
+    final san = sanMove.san;
+    final game = state.requireValue.game;
+    final soundService = ref.read(soundServiceProvider);
+    final isOpponentMove = game.youAre != null && game.lastPosition.turn == game.youAre;
+    if (san.contains('+') || san.contains('#')) {
+      soundService.play(Sound.check);
+      HapticFeedback.lightImpact();
+    } else if (san.contains('=')) {
+      soundService.play(Sound.promote);
+      HapticFeedback.lightImpact();
+    } else if (san.startsWith('O-O')) {
+      soundService.play(Sound.castle);
+      HapticFeedback.lightImpact();
+    } else if (san.contains('x')) {
+      ref.read(moveFeedbackServiceProvider).captureFeedback(game.meta.variant, check: false);
+    } else if (isOpponentMove) {
+      soundService.play(Sound.moveOpponent);
     } else {
-      ref.read(moveFeedbackServiceProvider).moveFeedback(check: isCheck);
+      ref.read(moveFeedbackServiceProvider).moveFeedback(check: false);
     }
-  }
-
+    }
   /// Play the sound when replaying moves
   void _playReplayMoveSound(String san) {
     final soundService = ref.read(soundServiceProvider);
