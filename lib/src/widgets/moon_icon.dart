@@ -24,7 +24,7 @@ class _MoonIconState extends State<MoonIcon>
   }
 
   Future<void> _load() async {
-    final program = await ui.FragmentProgram.fromAsset('assets/shaders/moon.frag');
+        final program = await ui.FragmentProgram.fromAsset('shaders/moon.frag');
     if (!mounted) return;
     setState(() => _shader = program.fragmentShader());
   }
