@@ -359,7 +359,9 @@ class OfflineComputerGameController() extends Notifier<OfflineComputerGameState>
     }
 
     _moveFeedback(sanMove);
-
+    if (!state.game.playable) {
+      _playEndSound();
+    }
     return sanMove;
   }
 
@@ -695,6 +697,7 @@ class OfflineComputerGameController() extends Notifier<OfflineComputerGameState>
       game: state.game.copyWith(status: GameStatus.resign, winner: state.game.playerSide.opposite),
       isEngineThinking: false,
     );
+      _playEndSound();
   }
 
   /// Ends the game on time, [side] having run out of it.
@@ -706,6 +709,7 @@ class OfflineComputerGameController() extends Notifier<OfflineComputerGameState>
       game: state.game.copyWith(status: GameStatus.outoftime, winner: side.opposite),
       isEngineThinking: false,
     );
+       _playEndSound();
   }
 
   /// Claim a draw due to threefold repetition.
@@ -717,6 +721,7 @@ class OfflineComputerGameController() extends Notifier<OfflineComputerGameState>
       game: state.game.copyWith(status: GameStatus.draw, isThreefoldRepetition: false),
       isEngineThinking: false,
     );
+      _playEndSound();
   }
 
   void takeback() {
@@ -838,15 +843,28 @@ class OfflineComputerGameController() extends Notifier<OfflineComputerGameState>
     }
   }
 
-  void _moveFeedback(SanMove sanMove) {
-    final isCheck = sanMove.san.contains('+');
-    if (sanMove.san.contains('x')) {
-      ref
-          .read(moveFeedbackServiceProvider)
-          .captureFeedback(state.game.meta.variant, check: isCheck);
-    } else {
-      ref.read(moveFeedbackServiceProvider).moveFeedback(check: isCheck);
-    }
+    void _moveFeedback(SanMove sanMove) {
+    final movedSide = state.turn.opposite;
+    ref
+        .read(moveFeedbackServiceProvider)
+        .playedMove(
+          sanMove.san,
+          variant: state.game.meta.variant,
+          opponent: movedSide != state.game.playerSide,
+        );
+  }
+
+  void _playEndSound() {
+    final winner = state.game.winner;
+    final endSound = winner == null
+        ? Sound.gameDraw
+        : winner == state.game.playerSide
+            ? Sound.gameWin
+            : Sound.gameLose;
+    Timer(const Duration(milliseconds: 500), () {
+      if (!ref.mounted) return;
+      ref.read(soundServiceProvider).play(endSound);
+    });
   }
 
   /// Updates the computer analysis on the game step at [stepIndex].
