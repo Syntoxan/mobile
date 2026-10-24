@@ -129,6 +129,7 @@ flutter:
     - assets/practice.json
   shaders:
     - shaders/syntoxan_crystal.frag
+    - assets/shaders/moon.frag
   fonts:
     - family: LichessIcons
       fonts:
