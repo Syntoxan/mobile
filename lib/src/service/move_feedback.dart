@@ -23,14 +23,37 @@ class MoveFeedbackService(final SoundService _soundService, final Ref _ref) {
     }
   }
 
-  /// The feedback for a standard chess move written as [san]: a capture or a move, with or without
-  /// a check.
-  void playedMove(String san) {
+  void playedMove(String san, {Variant variant = Variant.standard, bool opponent = false}) {
     final check = san.contains('+') || san.contains('#');
-    if (san.contains('x')) {
-      captureFeedback(Variant.standard, check: check);
+    final capture = san.contains('x');
+    if (capture && variant == Variant.atomic) {
+      captureFeedback(variant, check: check);
+      return;
+    }
+    if (check) {
+      _soundService.play(Sound.check);
+    } else if (san.contains('=')) {
+      _soundService.play(Sound.promote);
+    } else if (san.startsWith('O-O')) {
+      _soundService.play(Sound.castle);
+    } else if (capture) {
+      captureFeedback(variant);
+      return;
+    } else if (opponent) {
+      _soundService.play(Sound.moveOpponent);
     } else {
-      moveFeedback(check: check);
+      _soundService.play(Sound.move);
+    }
+    _hapticFeedback(check);
+  }
+
+  void _hapticFeedback(bool check) {
+    if (_ref.read(boardPreferencesProvider).hapticFeedback) {
+      if (check) {
+        HapticFeedback.mediumImpact();
+      } else {
+        HapticFeedback.lightImpact();
+      }
     }
   }
 
