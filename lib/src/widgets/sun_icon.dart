@@ -26,7 +26,7 @@ class _SunIconState extends State<SunIcon>
 
   Future<void> _loadShader() async {
     try {
-            final program = await ui.FragmentProgram.fromAsset('assets/shaders/sun.frag');
+                  final program = await ui.FragmentProgram.fromAsset('shaders/sun.frag');
       if (!mounted) return;
       setState(() => _shader = program.fragmentShader());
     } catch (e) {
