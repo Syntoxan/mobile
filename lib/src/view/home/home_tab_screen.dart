@@ -552,7 +552,15 @@ class const _GreetingWidget(
                   child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(isDayTime ? '☀️' : '🌙'),
+                    SizedBox(
+            width: 30,
+            height: 30,
+            child: OverflowBox(
+              maxWidth: 64,
+              maxHeight: 64,
+              child: isDayTime ? const SunIcon() : const MoonIcon(),
+            ),
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: FittedBox(
