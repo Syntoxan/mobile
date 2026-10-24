@@ -57,6 +57,8 @@ import 'package:lichess_mobile/src/widgets/misc.dart';
 import 'package:lichess_mobile/src/widgets/platform.dart';
 import 'package:lichess_mobile/src/widgets/server_outage_display.dart';
 import 'package:lichess_mobile/src/widgets/greeting_title.dart';
+import 'package:lichess_mobile/src/widgets/moon_icon.dart';
+import 'package:lichess_mobile/src/widgets/sun_icon.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
