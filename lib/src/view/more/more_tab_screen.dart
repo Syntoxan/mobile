@@ -12,7 +12,6 @@ import 'package:lichess_mobile/src/network/connectivity.dart';
 import 'package:lichess_mobile/src/styles/styles.dart';
 import 'package:lichess_mobile/src/tab_navigation.dart';
 import 'package:lichess_mobile/src/utils/l10n_context.dart';
-import 'package:lichess_mobile/src/view/account/account_menu.dart';
 import 'package:lichess_mobile/src/view/account/profile_screen.dart';
 import 'package:lichess_mobile/src/view/analysis/analysis_screen.dart';
 import 'package:lichess_mobile/src/view/board_editor/board_editor_screen.dart';
@@ -51,7 +50,7 @@ class const MoreTabScreen({super.key}) extends ConsumerWidget {
                 )
               : const AppBarLichessTitle(),
           centerTitle: false,
-          actions: const [AccountMenuButton()],
+          
         ),
         body: const _Body(),
       ),
