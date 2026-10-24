@@ -30,6 +30,13 @@ enum Sound() {
   puzzleStormEnd,
   clock,
   berserk,
+  castle,
+  check,
+  promote,
+  gameWin,
+  gameLose,
+  gameDraw,
+  moveOpponent,
 
   // Sounds of the learn feature, which exist in the standard theme only.
   learnTake,
