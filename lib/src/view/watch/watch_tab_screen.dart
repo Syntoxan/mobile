@@ -17,7 +17,6 @@ import 'package:lichess_mobile/src/tab_navigation.dart';
 import 'package:lichess_mobile/src/utils/image.dart';
 import 'package:lichess_mobile/src/utils/l10n_context.dart';
 import 'package:lichess_mobile/src/utils/screen.dart';
-import 'package:lichess_mobile/src/view/account/account_menu.dart';
 import 'package:lichess_mobile/src/view/broadcast/broadcast_carousel.dart';
 import 'package:lichess_mobile/src/view/broadcast/broadcast_list_screen.dart';
 import 'package:lichess_mobile/src/view/watch/live_tv_channels_screen.dart';
@@ -87,7 +86,7 @@ class _WatchScreenState() extends ConsumerState<WatchTabScreen> {
         appBar: PlatformAppBar(
           title: Text(context.l10n.watch),
           centerTitle: false,
-          actions: const [AccountMenuButton()],
+          
         ),
         body: switch (connectionStatus) {
           LichessConnectionStatus.online => OrientationBuilder(
