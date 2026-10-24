@@ -887,13 +887,20 @@ class GameController(final GameFullId gameFullId)
           );
         }
 
-        if (curState.game.lastPosition.fullmoves > 1) {
+                if (curState.game.lastPosition.fullmoves > 1) {
           Timer(const Duration(milliseconds: 500), () {
             if (!ref.mounted) return;
-            ref.read(soundServiceProvider).play(Sound.dong);
+            final me = curState.game.youAre;
+            final endSound = me == null
+                ? Sound.dong
+                : endData.winner == null
+                    ? Sound.gameDraw
+                    : endData.winner == me
+                        ? Sound.gameWin
+                        : Sound.gameLose;
+            ref.read(soundServiceProvider).play(endSound);
           });
-        }
-
+                }
         if (curState.game.meta.speed == Speed.correspondence) {
           ref.read(correspondenceServiceProvider).updateStoredGame(gameFullId, newState.game);
           ref.read(ongoingGamesProvider.notifier).updateGame(gameFullId, newState.game);
