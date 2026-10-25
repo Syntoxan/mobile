@@ -14,11 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: "appbundle --debug"
-            os: ubuntu-latest
-          - target: "ios --no-codesign"
-            os: macos-26
-          - target: "apk --debug"
+          - target: "apk --release --split-per-abi"
             os: ubuntu-latest
     steps:
       - name: Checkout mobile code
@@ -46,12 +42,11 @@ jobs:
 
       - run: flutter build ${{ matrix.target }}
 
-      - name: Upload debug APK
-        if: matrix.target == 'apk --debug'
+      - name: Upload release APK
+        if: matrix.target == 'apk --release --split-per-abi'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: lichess-mobile-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: lichess-mobile-release-apk
+          path: build/app/outputs/flutter-apk/*-release.apk
           if-no-files-found: error
           retention-days: 7
-          
