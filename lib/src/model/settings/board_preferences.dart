@@ -259,27 +259,28 @@ enum ShapeColor() {
 }
 
 /// The chessboard theme.
-enum BoardTheme(final String label, final String gifApiName) {
-  green('Green', 'green'),
-  pink('Pink', 'pink'),
-  midnight('Midnight', 'blue'),
-  classic('Classic', 'brown'),
-  lavender('Lavender', 'purple');
-
-  ChessboardColorScheme get colors {
-    switch (this) {
-      case BoardTheme.green:
-        return ChessboardColorScheme.green;
-      case BoardTheme.pink:
-        return ChessboardColorScheme.pink;
-      case BoardTheme.midnight:
-        return ChessboardColorScheme.midnight;
-      case BoardTheme.classic:
-        return ChessboardColorScheme.brown;
-      case BoardTheme.lavender:
-        return ChessboardColorScheme.lavender;
-    }
-  }
+enum BoardTheme(final String label, final String gifApiName, final ChessboardColorScheme colors) {
+  green('Green', 'green', ChessboardColorScheme.green),
+  pink(
+    'Pink',
+    'pink',
+    ChessboardColorScheme.solid(light: Color(0xfff4f0f0), dark: Color(0xffec93a6)),
+  ),
+  midnight(
+    'Midnight',
+    'blue',
+    ChessboardColorScheme.solid(light: Color(0xff9aa5b8), dark: Color(0xff3e4a63)),
+  ),
+  classic(
+    'Classic',
+    'brown',
+    ChessboardColorScheme.solid(light: Color(0xfff0d9b6), dark: Color(0xffb58863)),
+  ),
+  lavender(
+    'Lavender',
+    'purple',
+    ChessboardColorScheme.solid(light: Color(0xffffffff), dark: Color(0xff8e7cc3)),
+  );
 
   Widget get thumbnail => SizedBox(
     height: 44,
