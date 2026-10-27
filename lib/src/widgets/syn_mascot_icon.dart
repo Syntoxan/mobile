@@ -174,16 +174,21 @@ List<_SynGroove> _synBuildGrooves() {
 }
 
 class SynMascotIcon extends StatelessWidget {
-  const SynMascotIcon({super.key, this.size, this.color});
+  const SynMascotIcon({super.key, this.size, this.color, this.showPlate});
 
   final double? size;
   final Color? color;
+
+  /// null = auto: plate only in light mode.
+  final bool? showPlate;
 
   @override
   Widget build(BuildContext context) {
     final iconTheme = IconTheme.of(context);
     final double s = size ?? iconTheme.size ?? 24.0;
     final double dpr = MediaQuery.devicePixelRatioOf(context);
+    final bool plate =
+        showPlate ?? Theme.of(context).brightness == Brightness.light;
     return Semantics(
       label: 'Syntoxan mascot',
       image: true,
@@ -191,7 +196,9 @@ class SynMascotIcon extends StatelessWidget {
         child: SizedBox(
           width: s,
           height: s,
-          child: CustomPaint(painter: _SynMascotPainter(color ?? synFaceColor, dpr)),
+          child: CustomPaint(
+            painter: _SynMascotPainter(color ?? synFaceColor, dpr, plate),
+          ),
         ),
       ),
     );
@@ -199,10 +206,11 @@ class SynMascotIcon extends StatelessWidget {
 }
 
 class _SynMascotPainter extends CustomPainter {
-  const _SynMascotPainter(this.faceColor, this.dpr);
+  const _SynMascotPainter(this.faceColor, this.dpr, this.showPlate);
 
   final Color faceColor;
   final double dpr;
+  final bool showPlate;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -224,12 +232,22 @@ class _SynMascotPainter extends CustomPainter {
       ..color = faceColor
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
+    // Eyes: dark fill on plate, or a real hole when there is no plate.
+    final Paint eyes = Paint()
+      ..color = showPlate ? synPlateColor : const Color(0xFF000000)
+      ..style = PaintingStyle.fill
+      ..blendMode = showPlate ? BlendMode.srcOver : BlendMode.dstOut
+      ..isAntiAlias = true;
 
-    canvas.save();
-    canvas.translate(left, top);
-    canvas.scale(s, plateH / _synPlateHeight);
-    canvas.drawPath(_synPlatePath, plate);
-    canvas.restore();
+    if (showPlate) {
+      canvas.save();
+      canvas.translate(left, top);
+      canvas.scale(s, plateH / _synPlateHeight);
+      canvas.drawPath(_synPlatePath, plate);
+      canvas.restore();
+    } else {
+      canvas.saveLayer(Offset.zero & size, Paint());
+    }
 
     canvas.save();
     canvas.translate(left, top);
@@ -248,16 +266,23 @@ class _SynMascotPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = math.max(g.width, 1.0 / (dpr * s))
+        ..blendMode = showPlate ? BlendMode.srcOver : BlendMode.dstOut
         ..isAntiAlias = true;
       canvas.drawPath(g.path, groove);
     }
     canvas.restore();
 
-    canvas.drawPath(_synEyesPath, plate);
+    canvas.drawPath(_synEyesPath, eyes);
     canvas.restore();
+
+    if (!showPlate) {
+      canvas.restore(); // saveLayer
+    }
   }
 
   @override
   bool shouldRepaint(covariant _SynMascotPainter oldDelegate) =>
-      oldDelegate.dpr != dpr || oldDelegate.faceColor != faceColor;
+      oldDelegate.dpr != dpr ||
+      oldDelegate.faceColor != faceColor ||
+      oldDelegate.showPlate != showPlate;
 }
