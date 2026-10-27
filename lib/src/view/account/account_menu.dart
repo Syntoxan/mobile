@@ -24,7 +24,7 @@ import 'package:lichess_mobile/src/widgets/adaptive_action_sheet.dart';
 import 'package:lichess_mobile/src/widgets/feedback.dart';
 import 'package:lichess_mobile/src/widgets/list.dart';
 import 'package:lichess_mobile/src/widgets/platform.dart';
-import 'package:lichess_mobile/src/widgets/syn_ghost_icon.dart';
+import 'package:lichess_mobile/src/widgets/syn_mascot_icon.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -340,7 +340,7 @@ class _AccountMenuButtonState() extends ConsumerState<AccountMenuButton> {
               : null,
           tooltip: value == null ? context.l10n.signIn : value.username,
           icon: value == null
-                                          ? const SynGhostIcon(size: 20.6)
+                                          ? const SynMascotIcon(size: 20.6)
               : CircleAvatar(
                   radius: isIOS ? _cupertinoAvatarRadius : _materialAnonIconSize / 2 + 1,
                   foregroundImage: value.flair != null && !_errorLoadingFlair
@@ -365,7 +365,7 @@ class _AccountMenuButtonState() extends ConsumerState<AccountMenuButton> {
                 height: _cupertinoButtonSize,
               )
             : null,
-            icon: const SynGhostIcon(size: 20.6),
+            icon: const SynMascotIcon(size: 20.6),
         tooltip: context.l10n.signIn,
         onPressed: openMenu,
       ),
