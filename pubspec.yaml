@@ -143,9 +143,6 @@ flutter:
     - family: LichessPuzzleIcons
       fonts:
         - asset: assets/fonts/PuzzleIcons.ttf
-    - family: Prata
-      fonts:
-        - asset: assets/fonts/Prata-Regular.ttf
     - family: AdobeClean
       fonts:
         - asset: assets/fonts/AdobeClean-SemiLight.otf
