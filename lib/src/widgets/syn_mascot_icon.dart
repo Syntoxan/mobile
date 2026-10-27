@@ -2,12 +2,16 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+/// Mascot colour in light mode (near-black).
 const Color synPlateColor = Color(0xFF17131F);
+
+/// Mascot colour in dark mode.
 const Color synFaceColor = Color(0xFFFFFFFF);
 
-const int _synPlateRgb = 0x17131F;
-const double _synPlateHeight = 0.89237;
-const double _synPlateRadius = 0.03791;
+/// Vertical centre of the visible mascot inside its unit square. The painter
+/// uses it to centre the mascot in its box, which lifts it up to sit level with
+/// the text next to it.
+const double _synContentCenterY = 0.52960;
 
 const List<Offset> _synFaceVertices = <Offset>[
   Offset(0.21425, 0.32470),
@@ -50,19 +54,12 @@ const List<double> _synGroovesRight = <double>[
   0.84226, 0.37925, 0.84926, 0.39326, 0.85564, 0.40529, 0.85564, 0.41582, 0.00422,
 ];
 
-final Path _synPlatePath = _synBuildPlate();
 final Path _synFacePath = _synRoundedPolygon(_synFaceVertices, _synFaceRadii);
 final Path _synHornsPath = _synBuildHorns();
 final Path _synEyesPath = _synBuildEyes();
 final List<_SynGroove> _synGrooves = _synBuildGrooves();
 
 Offset _synUnit(Offset o) => o / o.distance;
-
-double _synFloorPx(double v, double dpr) =>
-    (v * dpr + 1e-6).floorToDouble() / dpr;
-
-double _synCeilPx(double v, double dpr) =>
-    (v * dpr - 1e-6).ceilToDouble() / dpr;
 
 double _synRoundPx(double v, double dpr) => (v * dpr).roundToDouble() / dpr;
 
@@ -98,18 +95,6 @@ Path _synRoundedPolygon(List<Offset> v, List<double> r) {
   _synCubic(path, c1[0], c2[0], end[0]);
   path.close();
   return path;
-}
-
-Path _synBuildPlate() {
-  return _synRoundedPolygon(
-    const <Offset>[
-      Offset(0.0, 0.0),
-      Offset(1.0, 0.0),
-      Offset(1.0, _synPlateHeight),
-      Offset(0.0, _synPlateHeight),
-    ],
-    const <double>[_synPlateRadius, _synPlateRadius, _synPlateRadius, _synPlateRadius],
-  );
 }
 
 void _synAddHorn(Path path, List<double> d) {
@@ -173,22 +158,24 @@ List<_SynGroove> _synBuildGrooves() {
   return out;
 }
 
+/// The Syntoxan mascot, drawn without any background plate.
+///
+/// Black in light mode and white in dark mode unless [color] is given. The eyes
+/// and horn grooves are real transparent cut-outs, so the background shows
+/// through them.
 class SynMascotIcon extends StatelessWidget {
-  const SynMascotIcon({super.key, this.size, this.color, this.showPlate});
+  const SynMascotIcon({super.key, this.size, this.color});
 
   final double? size;
   final Color? color;
-
-  /// null = auto: plate only in light mode.
-  final bool? showPlate;
 
   @override
   Widget build(BuildContext context) {
     final iconTheme = IconTheme.of(context);
     final double s = size ?? iconTheme.size ?? 24.0;
     final double dpr = MediaQuery.devicePixelRatioOf(context);
-    final bool plate =
-        showPlate ?? Theme.of(context).brightness == Brightness.light;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color mascotColor = color ?? (isDark ? synFaceColor : synPlateColor);
     return Semantics(
       label: 'Syntoxan mascot',
       image: true,
@@ -196,9 +183,7 @@ class SynMascotIcon extends StatelessWidget {
         child: SizedBox(
           width: s,
           height: s,
-          child: CustomPaint(
-            painter: _SynMascotPainter(color ?? synFaceColor, dpr, plate),
-          ),
+          child: CustomPaint(painter: _SynMascotPainter(mascotColor, dpr)),
         ),
       ),
     );
@@ -206,54 +191,39 @@ class SynMascotIcon extends StatelessWidget {
 }
 
 class _SynMascotPainter extends CustomPainter {
-  const _SynMascotPainter(this.faceColor, this.dpr, this.showPlate);
+  const _SynMascotPainter(this.color, this.dpr);
 
-  final Color faceColor;
+  final Color color;
   final double dpr;
-  final bool showPlate;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) {
       return;
     }
-    final double fit = math.min(size.width, size.height / _synPlateHeight);
-    final double left = _synCeilPx((size.width - fit) / 2.0, dpr);
-    final double right = _synFloorPx((size.width + fit) / 2.0, dpr);
-    final double s = right - left;
-    final double plateH = _synRoundPx(s * _synPlateHeight, dpr);
-    final double top = _synRoundPx((size.height - plateH) / 2.0, dpr);
+    final double s = math.min(size.width, size.height);
+    final double left = _synRoundPx((size.width - s) / 2.0, dpr);
+    // Centre the visible mascot (not the empty unit square) vertically.
+    final double top = _synRoundPx(size.height / 2.0 - _synContentCenterY * s, dpr);
 
-    final Paint plate = Paint()
-      ..color = synPlateColor
+    final Paint fill = Paint()
+      ..color = color
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
-    final Paint face = Paint()
-      ..color = faceColor
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-    // Eyes: dark fill on plate, or a real hole when there is no plate.
+    // Cut-out paint: removes whatever was drawn underneath inside this layer.
     final Paint eyes = Paint()
-      ..color = showPlate ? synPlateColor : const Color(0xFF000000)
+      ..color = const Color(0xFF000000)
       ..style = PaintingStyle.fill
-      ..blendMode = showPlate ? BlendMode.srcOver : BlendMode.dstOut
+      ..blendMode = BlendMode.dstOut
       ..isAntiAlias = true;
 
-    if (showPlate) {
-      canvas.save();
-      canvas.translate(left, top);
-      canvas.scale(s, plateH / _synPlateHeight);
-      canvas.drawPath(_synPlatePath, plate);
-      canvas.restore();
-    } else {
-      canvas.saveLayer(Offset.zero & size, Paint());
-    }
+    canvas.saveLayer(Offset.zero & size, Paint());
 
     canvas.save();
     canvas.translate(left, top);
     canvas.scale(s, s);
-    canvas.drawPath(_synHornsPath, face);
-    canvas.drawPath(_synFacePath, face);
+    canvas.drawPath(_synHornsPath, fill);
+    canvas.drawPath(_synFacePath, fill);
 
     canvas.save();
     canvas.clipPath(_synHornsPath);
@@ -262,11 +232,11 @@ class _SynMascotPainter extends CustomPainter {
       final double coverage = math.min(1.0, math.max(0.0, physical / 1.0));
       final int alpha = (coverage * 255.0).round();
       final Paint groove = Paint()
-        ..color = Color((alpha << 24) | _synPlateRgb)
+        ..color = Color.fromARGB(alpha, 0, 0, 0)
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = math.max(g.width, 1.0 / (dpr * s))
-        ..blendMode = showPlate ? BlendMode.srcOver : BlendMode.dstOut
+        ..blendMode = BlendMode.dstOut
         ..isAntiAlias = true;
       canvas.drawPath(g.path, groove);
     }
@@ -275,14 +245,10 @@ class _SynMascotPainter extends CustomPainter {
     canvas.drawPath(_synEyesPath, eyes);
     canvas.restore();
 
-    if (!showPlate) {
-      canvas.restore(); // saveLayer
-    }
+    canvas.restore(); // saveLayer
   }
 
   @override
   bool shouldRepaint(covariant _SynMascotPainter oldDelegate) =>
-      oldDelegate.dpr != dpr ||
-      oldDelegate.faceColor != faceColor ||
-      oldDelegate.showPlate != showPlate;
+      oldDelegate.dpr != dpr || oldDelegate.color != color;
 }
