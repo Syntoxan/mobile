@@ -122,7 +122,6 @@ flutter:
     - assets/sounds/piano/
     - assets/sounds/standard/
     - assets/sounds/sfx/
-    - assets/board-thumbnails/
     - assets/maia/
     - assets/positions.json
     - assets/endgames.json
@@ -167,4 +166,3 @@ flutter_native_splash:
 
   color_dark: "#000000"
   image_dark: assets/images/logo-white.webp
-  
