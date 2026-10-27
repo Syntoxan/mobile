@@ -41,18 +41,19 @@ class const MoreTabScreen({super.key}) extends ConsumerWidget {
           ref.read(currentBottomTabProvider.notifier).state = BottomTab.home;
         }
       },
-      child: PlatformScaffold(
-        appBar: PlatformAppBar(
-          title: Theme.of(context).platform == TargetPlatform.iOS
-              ? AppBarLichessTitle(
-                  iconSize:
-                      CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.fontSize ?? 34,
-                )
-              : const AppBarLichessTitle(),
-          centerTitle: false,
-          
-        ),
+            child: PlatformScaffold(
+        // appBar: PlatformAppBar(
+        //   title: Theme.of(context).platform == TargetPlatform.iOS
+        //       ? AppBarLichessTitle(
+        //           iconSize:
+        //               CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.fontSize ?? 34,
+        //         )
+        //       : const AppBarLichessTitle(),
+        //   centerTitle: false,
+        // ),
         body: const _Body(),
+      ),
+
       ),
     );
   }
