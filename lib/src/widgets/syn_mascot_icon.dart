@@ -11,7 +11,7 @@ const Color synFaceColor = Color(0xFFFFFFFF);
 /// Vertical centre of the visible mascot inside its unit square. The painter
 /// uses it to centre the mascot in its box, which lifts it up to sit level with
 /// the text next to it.
-const double _synContentCenterY = 0.52960;
+const double _synContentCenterY = 0.61500;
 
 const List<Offset> _synFaceVertices = <Offset>[
   Offset(0.21425, 0.32470),
