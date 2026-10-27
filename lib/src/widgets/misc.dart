@@ -10,7 +10,7 @@ class const AppBarLichessTitle({super.key, final double iconSize = 24}) extends 
   @override
   Widget build(BuildContext context) {
         return const SyntoxanTitle(
-      style: TextStyle(fontFamily: 'Prata', letterSpacing: 2.0),
+      style: TextStyle(fontFamily: 'InstrumentSerif', letterSpacing: 2.0),
     );
   }
 }
