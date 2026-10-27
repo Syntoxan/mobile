@@ -259,28 +259,18 @@ enum ShapeColor() {
 }
 
 /// The chessboard theme.
-enum BoardTheme(final String label, final String gifApiName, final ChessboardColorScheme colors) {
-  green('Green', 'green', ChessboardColorScheme.green),
-  pink(
-    'Pink',
-    'pink',
-    ChessboardColorScheme.solid(light: Color(0xfff4f0f0), dark: Color(0xffec93a6)),
-  ),
-  midnight(
-    'Midnight',
-    'blue',
-    ChessboardColorScheme.solid(light: Color(0xff9aa5b8), dark: Color(0xff3e4a63)),
-  ),
-  classic(
-    'Classic',
-    'brown',
-    ChessboardColorScheme.solid(light: Color(0xfff0d9b6), dark: Color(0xffb58863)),
-  ),
-  lavender(
-    'Lavender',
-    'purple',
-    ChessboardColorScheme.solid(light: Color(0xffffffff), dark: Color(0xff8e7cc3)),
-  );
+enum BoardTheme(final String label, final String gifApiName, final Color light, final Color dark) {
+  green('Green', 'green', Color(0xffffffdd), Color(0xff86a666)),
+  pink('Pink', 'pink', Color(0xfff4f0f0), Color(0xffec93a6)),
+  midnight('Midnight', 'blue', Color(0xff9aa5b8), Color(0xff3e4a63)),
+  classic('Classic', 'brown', Color(0xfff0d9b6), Color(0xffb58863)),
+  lavender('Lavender', 'purple', Color(0xffffffff), Color(0xff8e7cc3));
+
+  static final _cache = <BoardTheme, ChessboardColorScheme>{};
+
+  ChessboardColorScheme get colors => this == BoardTheme.green
+      ? ChessboardColorScheme.green
+      : _cache.putIfAbsent(this, () => ChessboardColorScheme.solid(light: light, dark: dark));
 
   Widget get thumbnail => SizedBox(
     height: 44,
