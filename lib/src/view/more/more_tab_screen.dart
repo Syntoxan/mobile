@@ -31,7 +31,12 @@ import 'package:lichess_mobile/src/widgets/settings.dart';
 import 'package:lichess_mobile/src/widgets/user.dart';
 import 'package:material_ui/material_ui.dart';
 
-class const MoreTabScreen({super.key}) extends ConsumerWidget {
+/// Set to `true` to show the SYNTOXAN title in the app bar again.
+const bool _showSyntoxanTitle = false;
+
+class MoreTabScreen extends ConsumerWidget {
+  const MoreTabScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PopScope(
@@ -41,25 +46,28 @@ class const MoreTabScreen({super.key}) extends ConsumerWidget {
           ref.read(currentBottomTabProvider.notifier).state = BottomTab.home;
         }
       },
-            child: PlatformScaffold(
-         appBar: PlatformAppBar(
-           title: Theme.of(context).platform == TargetPlatform.iOS
-              ? AppBarLichessTitle(
-                 iconSize:
-                      CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.fontSize ?? 34,
-                )
-              : const AppBarLichessTitle(),
-           centerTitle: false,
-         ),
+      child: PlatformScaffold(
+        appBar: PlatformAppBar(
+          title: !_showSyntoxanTitle
+              ? const SizedBox.shrink()
+              : Theme.of(context).platform == TargetPlatform.iOS
+                  ? AppBarLichessTitle(
+                      iconSize:
+                          CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.fontSize ??
+                              34,
+                    )
+                  : const AppBarLichessTitle(),
+          centerTitle: false,
+        ),
         body: const _Body(),
-      ),
-
       ),
     );
   }
 }
 
-class const _Body() extends ConsumerWidget {
+class _Body extends ConsumerWidget {
+  const _Body();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOnline = ref.watch(isDeviceOnlineProvider);
@@ -182,7 +190,9 @@ class const _Body() extends ConsumerWidget {
   }
 }
 
-class const _AccountSection() extends ConsumerWidget {
+class _AccountSection extends ConsumerWidget {
+  const _AccountSection();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOnline = ref.watch(isDeviceOnlineProvider);
