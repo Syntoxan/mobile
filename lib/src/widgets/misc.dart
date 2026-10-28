@@ -6,7 +6,7 @@ import 'package:lichess_mobile/src/widgets/syntoxan_title.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class const AppBarLichessTitle({super.key, final double iconSize = 24}) extends StatelessWidget {
+class const AppBarLichessTitle({super.key, final double iconSize = 22}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Offset(0, 6) -> title ta 6px niche namabe. Beshi namate 8/10 din, uthate -4 din.
