@@ -149,6 +149,10 @@ flutter:
     - family: InstrumentSerif
       fonts:
         - asset: assets/fonts/InstrumentSerif-Regular.ttf
+      fonts:
+    - family: SyntoxanFont
+      fonts:
+        - asset: assets/fonts/syntoxan_font.ttf
 
   # Enable generation of localized Strings from arb files.
   generate: true
