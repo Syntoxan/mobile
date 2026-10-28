@@ -30,6 +30,7 @@ import 'package:lichess_mobile/src/widgets/platform.dart';
 import 'package:lichess_mobile/src/widgets/settings.dart';
 import 'package:lichess_mobile/src/widgets/user.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:lichess_mobile/src/widgets/syn_sakura_mascot.dart';
 
 /// Set to `true` to show the SYNTOXAN title in the app bar again.
 const bool _showSyntoxanTitle = true;
@@ -46,7 +47,7 @@ class MoreTabScreen extends ConsumerWidget {
           ref.read(currentBottomTabProvider.notifier).state = BottomTab.home;
         }
       },
-      child: PlatformScaffold(
+            child: PlatformScaffold(
         appBar: PlatformAppBar(
           title: !_showSyntoxanTitle
               ? const SizedBox.shrink()
@@ -58,9 +59,16 @@ class MoreTabScreen extends ConsumerWidget {
                     )
                   : const AppBarLichessTitle(),
           centerTitle: false,
+          actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 16.0),
+              child: SynSakuraMascot(size: 36.0),
+            ),
+          ],
         ),
         body: const _Body(),
       ),
+
     );
   }
 }
