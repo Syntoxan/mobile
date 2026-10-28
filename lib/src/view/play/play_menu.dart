@@ -1,73 +1,16 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lichess_mobile/src/model/common/perf.dart';
-import 'package:lichess_mobile/src/network/connectivity.dart';
-import 'package:lichess_mobile/src/styles/icon_extensions.dart';
-import 'package:lichess_mobile/src/styles/lichess_icons.dart';
 import 'package:lichess_mobile/src/utils/l10n_context.dart';
 import 'package:lichess_mobile/src/view/offline_computer/offline_computer_game_screen.dart';
 import 'package:lichess_mobile/src/view/over_the_board/over_the_board_screen.dart';
-import 'package:lichess_mobile/src/view/play/correspondence_challenges_screen.dart';
-import 'package:lichess_mobile/src/view/play/create_challenge_bottom_sheet.dart';
-import 'package:lichess_mobile/src/view/play/create_game_widget.dart';
-import 'package:lichess_mobile/src/view/tournament/tournament_list_screen.dart';
-import 'package:lichess_mobile/src/widgets/adaptive_bottom_sheet.dart';
 import 'package:lichess_mobile/src/widgets/list.dart';
 import 'package:material_ui/material_ui.dart';
 
-class const PlayMenu() extends ConsumerWidget {
+class const PlayMenu() extends StatelessWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final connectionStatus = ref.watch(lichessConnectionStatusProvider);
-
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: CreateGameWidget(),
-        ),
         _Section(
           children: [
-            ListTile(
-              enabled: connectionStatus == LichessConnectionStatus.online,
-              onTap: () {
-                // Pops the play bottom sheet
-                Navigator.of(context).popUntil((route) => route is! ModalBottomSheetRoute);
-                showAdaptiveBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  useRootNavigator: true,
-                  builder: (context) {
-                    return const CreateChallengeBottomSheet(user: null);
-                  },
-                );
-              },
-              leading: const Icon(Icons.person),
-              title: Text(context.l10n.challengeAFriend),
-            ),
-            ListTile(
-              enabled: connectionStatus == LichessConnectionStatus.online,
-              onTap: () {
-                // Pops the play bottom sheet
-                Navigator.of(context).popUntil((route) => route is! ModalBottomSheetRoute);
-                Navigator.of(
-                  context,
-                  rootNavigator: true,
-                ).push(CorrespondenceChallengesScreen.buildRoute());
-              },
-              leading: Icon(Perf.correspondence.icon),
-              title: Text(context.l10n.correspondence),
-            ),
-            ListTile(
-              enabled: connectionStatus == LichessConnectionStatus.online,
-              onTap: () {
-                // Pops the play bottom sheet
-                Navigator.of(context).popUntil((route) => route is! ModalBottomSheetRoute);
-
-                Navigator.of(context).push(TournamentListScreen.buildRoute());
-              },
-              leading: const Icon(LichessIcons.tournament_cup),
-              title: Text(context.l10n.arenaArenaTournaments),
-            ),
             ListTile(
               onTap: () {
                 // Pops the play bottom sheet
