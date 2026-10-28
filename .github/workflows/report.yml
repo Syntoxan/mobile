@@ -1,0 +1,15 @@
+name: report
+on: workflow_dispatch
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Usage
+        run: |
+          echo "=== FILES ==="
+          grep -rlE "package:(app_links|flutter_appauth|flutter_secure_storage|firebase_core|firebase_crashlytics|firebase_messaging|flutter_local_notifications|home_widget|connectivity_plus|signal_strength_indicator|qr_flutter|web_socket_channel)/" lib || true
+          echo "=== LINES ==="
+          grep -rnE "package:(app_links|flutter_appauth|flutter_secure_storage|firebase_core|firebase_crashlytics|firebase_messaging|flutter_local_notifications|home_widget|connectivity_plus|signal_strength_indicator|qr_flutter|web_socket_channel)/" lib || true
+          echo "=== ALL FILES ==="
+          find lib -name "*.dart" | sort
