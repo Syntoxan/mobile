@@ -1,0 +1,17 @@
+name: pack
+on: workflow_dispatch
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lib-source
+          path: |
+            lib
+            pubspec.yaml
+            android/app/src/main
+            android/app/build.gradle*
+            android/settings.gradle*
+            android/build.gradle*
