@@ -10,7 +10,6 @@ environment:
   flutter: 3.47.7
 
 dependencies:
-  app_links: ^7.2.1
   app_settings: ^9.0.0
   async: ^2.13.1
   auto_size_text: ^3.0.0
@@ -20,7 +19,6 @@ dependencies:
       ref: main
   clock: ^1.1.2
   collection: ^1.19.1
-  connectivity_plus: ^7.3.1
   cronet_http: ^1.9.0
   crypto: ^3.0.7
   cupertino_http: ^3.0.2
@@ -32,16 +30,11 @@ dependencies:
   dynamic_system_colors: ^1.9.0
   fast_immutable_collections: ^12.0.0
   file_picker: ^13.1.0
-  firebase_core: ^4.13.0
-  firebase_crashlytics: ^5.2.7
-  firebase_messaging: ^16.5.0
   fl_chart: ^1.2.0
   flutter:
     sdk: flutter
-  flutter_appauth: ^12.0.2
   flutter_displaymode: ^0.7.0
   flutter_layout_grid: ^2.0.8
-  flutter_local_notifications: ^22.3.0
   flutter_localizations:
     sdk: flutter
   flutter_markdown_plus: 
@@ -51,11 +44,9 @@ dependencies:
   flutter_native_splash: ^2.4.8
   flutter_onnxruntime: ^1.9.0
   flutter_riverpod: ^3.4.2
-  flutter_secure_storage: ^11.0.0
   flutter_slidable: ^4.0.3
   flutter_spinkit: ^5.2.2
   freezed_annotation: ^3.1.0
-  home_widget: ^0.10.0
   http: ^1.6.0
   image_picker: ^1.2.3
   intl: ^0.20.3
@@ -74,12 +65,10 @@ dependencies:
   path_provider: ^2.1.6
   popover: ^0.4.0
   pub_semver: ^2.2.0
-  qr_flutter: ^4.1.0
   quick_actions: ^1.1.0
   result_extensions: ^0.2.0
   share_plus: ^13.3.0
   shared_preferences: ^2.5.5
-  signal_strength_indicator: ^0.5.0
   sound_effect: ^0.2.0
   sqflite: ^2.4.3
   sqflite_common_ffi: ^2.4.2+1
@@ -87,7 +76,6 @@ dependencies:
   url_launcher: ^6.3.2
   visibility_detector: ^0.4.0+2
   wakelock_plus: ^1.7.0
-  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   build_runner: ^2.15.1
