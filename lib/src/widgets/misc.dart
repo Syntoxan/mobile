@@ -9,11 +9,16 @@ import 'package:url_launcher/url_launcher.dart';
 class const AppBarLichessTitle({super.key, final double iconSize = 24}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-        return const SyntoxanTitle(
-      style: TextStyle(fontFamily: 'InstrumentSerif', letterSpacing: 2.0),
+    // Offset(0, 6) -> title ta 6px niche namabe. Beshi namate 8/10 din, uthate -4 din.
+    return Transform.translate(
+      offset: const Offset(0, 6),
+      child: const SyntoxanTitle(
+        style: TextStyle(fontFamily: 'SyntoxanFont', letterSpacing: 1.5),
+      ),
     );
   }
 }
+
 /// A widget that displays a title in the app bar with auto-sizing text.
 class const AppBarTitleText(
   final String text, {
