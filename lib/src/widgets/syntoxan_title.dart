@@ -48,8 +48,8 @@ class _SyntoxanTitleState extends State<SyntoxanTitle>
     final base = (widget.style ??
             const TextStyle(
               fontFamily: 'Prata',
-              fontSize: 20,
-              letterSpacing: 1.5,
+              fontSize: 18,
+              letterSpacing: 1,
             ))
         .copyWith(color: Colors.white);
     final text = Text(widget.text, style: base, maxLines: 1);
