@@ -41,8 +41,8 @@ class SynRuiBoMascot extends StatefulWidget {
   const SynRuiBoMascot({
     super.key,
     this.size = 44.0,
-    this.animate = false,
-    this.tapToToggle = false,
+    this.animate = true,
+    this.tapToToggle = true,
     this.initialFace = SynRuiBoFace.happy,
     this.onTap,
   });
