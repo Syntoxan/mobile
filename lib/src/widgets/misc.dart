@@ -13,7 +13,7 @@ class const AppBarLichessTitle({super.key, final double iconSize = 22}) extends 
     return Transform.translate(
       offset: const Offset(0, 6),
       child: const SyntoxanTitle(
-        style: TextStyle(fontFamily: 'SyntoxanFont', letterSpacing: 1),
+        style: TextStyle(fontFamily: 'SyntoxanFont', letterSpacing: 1.5),
       ),
     );
   }
