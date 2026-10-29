@@ -62,7 +62,7 @@ class MoreTabScreen extends ConsumerWidget {
           actions: const [
             Padding(
               padding: EdgeInsets.only(right: 16.0),
-              child: SynRuiBoMascot(size: 38.0),
+              child: SynRuiBoMascot(size: 44.0),
             ),
           ],
         ),
