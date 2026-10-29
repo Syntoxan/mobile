@@ -55,7 +55,7 @@ class MoreTabScreen extends ConsumerWidget {
                   ? AppBarLichessTitle(
                       iconSize:
                           CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.fontSize ??
-                              30,
+                              32,
                     )
                   : const AppBarLichessTitle(),
           centerTitle: false,
