@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'syn_hidden_menu_screen.dart';
 
-class SynMascotIcon extends StatefulWidget {
-  const SynMascotIcon({super.key, this.size = 40});
+class SynRuiBoMascot extends StatefulWidget {
+  const SynRuiBoMascot({super.key, this.size = 44});
 
   final double size;
 
   @override
-  State<SynMascotIcon> createState() => _SynMascotIconState();
+  State<SynRuiBoMascot> createState() => _SynRuiBoMascotState();
 }
 
-class _SynMascotIconState extends State<SynMascotIcon>
+class _SynRuiBoMascotState extends State<SynRuiBoMascot>
     with TickerProviderStateMixin {
   static bool _likedMemory = false;
   static const int _tapGoal = 3;
