@@ -30,7 +30,6 @@ import 'package:lichess_mobile/src/widgets/platform.dart';
 import 'package:lichess_mobile/src/widgets/settings.dart';
 import 'package:lichess_mobile/src/widgets/user.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:lichess_mobile/src/widgets/syn_ruibo_mascot.dart';
 
 /// Set to `true` to show the SYNTOXAN title in the app bar again.
 const bool _showSyntoxanTitle = true;
@@ -59,12 +58,6 @@ class MoreTabScreen extends ConsumerWidget {
                     )
                   : const AppBarLichessTitle(),
           centerTitle: false,
-          actions: const [
-            Padding(
-              padding: EdgeInsets.only(right: 16.0),
-              child: SynRuiBoMascot(size: 44.0),
-            ),
-          ],
         ),
         body: const _Body(),
       ),
