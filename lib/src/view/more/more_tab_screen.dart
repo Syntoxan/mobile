@@ -32,7 +32,7 @@ import 'package:lichess_mobile/src/widgets/user.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Set to `true` to show the SYNTOXAN title in the app bar again.
-const bool _showSyntoxanTitle = true;
+const bool _showSyntoxanTitle = false;
 
 class MoreTabScreen extends ConsumerWidget {
   const MoreTabScreen({super.key});
