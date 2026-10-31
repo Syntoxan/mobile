@@ -45,7 +45,7 @@
 // If your MainActivity already overrides configureFlutterEngine / onActivityResult /
 // cleanUpFlutterEngine, just add the three SynFileBridge lines to those overrides.
 
-package org.lichess.mobileapp
+package org.lichess.mobileV2
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
