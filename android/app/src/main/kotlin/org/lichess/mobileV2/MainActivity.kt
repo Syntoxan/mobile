@@ -26,6 +26,8 @@ class MainActivity: FlutterActivity() {
   private var initialPgn: String? = null
   private var shareEventSink: EventChannel.EventSink? = null
 
+  private var synFileBridge: SynFileBridge? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     installSplashScreen()
     initialPgn = readPgnFromIntent(intent)
@@ -132,9 +134,24 @@ class MainActivity: FlutterActivity() {
         }
       }
     )
+
+    synFileBridge?.dispose()
+    synFileBridge = SynFileBridge(this, flutterEngine)
   }
 
-private fun decodeExclusionRects(inputRects: List<Map<String, Int>>): List<Rect> =
+  @Suppress("DEPRECATION")
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    if (synFileBridge?.onActivityResult(requestCode, resultCode, data) == true) return
+    super.onActivityResult(requestCode, resultCode, data)
+  }
+
+  override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+    synFileBridge?.dispose()
+    synFileBridge = null
+    super.cleanUpFlutterEngine(flutterEngine)
+  }
+
+  private fun decodeExclusionRects(inputRects: List<Map<String, Int>>): List<Rect> =
     inputRects.mapNotNull { item ->
         val left = item["left"]
         val top = item["top"]
