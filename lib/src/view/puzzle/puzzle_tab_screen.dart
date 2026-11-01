@@ -1,177 +1,547 @@
-package org.lichess.mobileV2
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:dartchess/dartchess.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:lichess_mobile/src/model/auth/auth_controller.dart';
+import 'package:lichess_mobile/src/model/puzzle/puzzle.dart';
+import 'package:lichess_mobile/src/model/puzzle/puzzle_angle.dart';
+import 'package:lichess_mobile/src/model/puzzle/puzzle_providers.dart';
+import 'package:lichess_mobile/src/model/puzzle/puzzle_theme.dart';
+import 'package:lichess_mobile/src/model/puzzle/streak_storage.dart';
+import 'package:lichess_mobile/src/network/connectivity.dart';
+import 'package:lichess_mobile/src/service/puzzle_service.dart';
+import 'package:lichess_mobile/src/styles/lichess_icons.dart';
+import 'package:lichess_mobile/src/styles/puzzle_icons.dart';
+import 'package:lichess_mobile/src/styles/styles.dart';
+import 'package:lichess_mobile/src/tab_navigation.dart';
+import 'package:lichess_mobile/src/utils/l10n_context.dart';
+import 'package:lichess_mobile/src/utils/screen.dart';
+import 'package:lichess_mobile/src/utils/string.dart';
+import 'package:lichess_mobile/src/view/puzzle/dashboard_screen.dart';
+import 'package:lichess_mobile/src/view/puzzle/puzzle_history_screen.dart';
+import 'package:lichess_mobile/src/view/puzzle/puzzle_screen.dart';
+import 'package:lichess_mobile/src/view/puzzle/puzzle_themes_screen.dart';
+import 'package:lichess_mobile/src/view/puzzle/storm_screen.dart';
+import 'package:lichess_mobile/src/view/puzzle/streak_screen.dart';
+import 'package:lichess_mobile/src/widgets/board_preview.dart';
+import 'package:lichess_mobile/src/widgets/feedback.dart';
+import 'package:lichess_mobile/src/widgets/list.dart';
+import 'package:lichess_mobile/src/widgets/platform.dart';
+import 'package:lichess_mobile/src/widgets/shimmer.dart';
+import 'package:material_ui/material_ui.dart';
 
-import android.app.ActivityManager
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Rect
-import android.net.Uri
-import android.os.Bundle
-import android.util.Log
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.ViewCompat
-import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.EventChannel
-import io.flutter.plugin.common.MethodChannel
+const _kNumberOfHistoryItemsOnHandset = 8;
+const _kNumberOfHistoryItemsOnTablet = 16;
 
-class MainActivity: FlutterActivity() {
-  private val GESTURES_CHANNEL = "mobile.lichess.org/gestures_exclusion"
-  private val SYSTEM_CHANNEL = "mobile.lichess.org/system"
-  private val SHARE_CHANNEL = "mobile.lichess.org/share"
-  private val SHARE_EVENTS_CHANNEL = "mobile.lichess.org/share/events"
-
-  // PGN the app was cold-started with, served once via the `getInitialPgn` method
-  // call. Also holds a PGN shared while running if Flutter isn't listening yet.
-  private var initialPgn: String? = null
-  private var shareEventSink: EventChannel.EventSink? = null
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    installSplashScreen()
-    initialPgn = readPgnFromIntent(intent)
-    super.onCreate(savedInstanceState)
-  }
-
-  // Deep links (study/broadcast/puzzle/share/open-web, etc.) delivered while the app is already
-  // running arrive here. Flutter's default handling leaves getIntent() pointing at the stale launch
-  // intent, so app_links would read the wrong URI; setIntent() updates the activity's current intent
-  // to the freshly received one so app_links surfaces it correctly. (OAuth callbacks no longer pass
-  // through here — flutter_appauth captures them in its own RedirectUriReceiverActivity.)
-  override fun onNewIntent(intent: Intent) {
-    setIntent(intent)
-    super.onNewIntent(intent)
-    readPgnFromIntent(intent)?.let { pgn ->
-      val sink = shareEventSink
-      if (sink != null) sink.success(pgn) else initialPgn = pgn
-    }
-  }
-
-  // Reads the text of a shared/opened PGN file. The manifest only routes the
-  // chess-pgn mime types and *.pgn content URIs here, so we can read the stream
-  // directly without inspecting the mime type.
-  private fun readPgnFromIntent(intent: Intent?): String? {
-    val uri: Uri? = when (intent?.action) {
-      Intent.ACTION_VIEW -> intent.data
-      Intent.ACTION_SEND -> {
-        @Suppress("DEPRECATION")
-        intent.getParcelableExtra(Intent.EXTRA_STREAM)
+class const PuzzleTabScreen({super.key}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // The saved batches are only used to show the extra angle previews at the bottom of the list,
+    // so a storage failure must not prevent the rest of the tab from being displayed. The listener
+    // only fires on state changes, so the user is warned once per failed load.
+    ref.listen(savedBatchesProvider, (_, next) {
+      if (next case AsyncError(:final error, :final stackTrace)) {
+        debugPrint('SEVERE: [PuzzleTabScreen] could not load saved batches; $error\n$stackTrace');
+        showSnackBar(context, 'Could not load the puzzles.', type: SnackBarType.error);
       }
-      else -> null
-    }
-    return uri?.let {
-      try {
-        contentResolver.openInputStream(it)?.use { stream ->
-          stream.readBytes().toString(Charsets.UTF_8)
-        }
-      } catch (e: Exception) {
-        Log.w("SharePgn", "Failed to read shared PGN", e)
-        null
-      }
-    }
-  }
+    });
 
-  override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-    super.configureFlutterEngine(flutterEngine)
-    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, GESTURES_CHANNEL).setMethodCallHandler {
-      call, result ->
-      if (call.method == "setSystemGestureExclusionRects") {
-        val arguments = call.arguments as List<Map<String, Int>>
-        val decodedRects = decodeExclusionRects(arguments)
-        ViewCompat.setSystemGestureExclusionRects(activity.window.decorView, decodedRects)
-        result.success(null)
-      } else {
-        result.notImplemented()
-      }
-    }
-
-    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SYSTEM_CHANNEL).setMethodCallHandler {
-      call, result ->
-      when (call.method) {
-          "clearApplicationUserData" -> {
-            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            result.success(activityManager.clearApplicationUserData())
-          }
-          "getTotalRam" -> {
-            val memoryInfo = getAvailableMemory()
-            val totalMemInMb = memoryInfo.totalMem / 1048576L
-            result.success(totalMemInMb.toInt())
-          }
-          // Returns the default browser's package and version, used to attribute login failures.
-          "getDefaultBrowser" -> {
-            result.success(getDefaultBrowserInfo())
-          }
-          // "getAvailableRam" -> {
-          //   val memoryInfo = getAvailableMemory()
-          //   val availMemInMb = memoryInfo.availMem / 1048576L
-          //   result.success(availMemInMb.toInt())
-          // }
-          else -> {
-            result.notImplemented()
-          }
-      }
-    }
-
-    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SHARE_CHANNEL).setMethodCallHandler {
-      call, result ->
-      if (call.method == "getInitialPgn") {
-        result.success(initialPgn)
-        initialPgn = null
-      } else {
-        result.notImplemented()
-      }
-    }
-
-    EventChannel(flutterEngine.dartExecutor.binaryMessenger, SHARE_EVENTS_CHANNEL).setStreamHandler(
-      object : EventChannel.StreamHandler {
-        override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-          shareEventSink = events
-        }
-
-        override fun onCancel(arguments: Any?) {
-          shareEventSink = null
-        }
-      }
-    )
-  }
-
-private fun decodeExclusionRects(inputRects: List<Map<String, Int>>): List<Rect> =
-    inputRects.mapNotNull { item ->
-        val left = item["left"]
-        val top = item["top"]
-        val right = item["right"]
-        val bottom = item["bottom"]
-
-        // If any of these are null, the whole block returns null
-        if (left != null && top != null && right != null && bottom != null) {
-            Rect(left, top, right, bottom)
-        } else {
-            // Log a warning instead
-            Log.w("RectDecoder", "Skipping malformed rect: $item")
-            null
-        }
-    }
-
-  private fun getAvailableMemory(): ActivityManager.MemoryInfo {
-    val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    return ActivityManager.MemoryInfo().also { memoryInfo ->
-        activityManager.getMemoryInfo(memoryInfo)
-    }
-  }
-
-  private fun getDefaultBrowserInfo(): Map<String, String?>? {
-    return try {
-      val pm = packageManager
-      val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://lichess.org"))
-      val resolveInfo = pm.resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY)
-      val pkg = resolveInfo?.activityInfo?.packageName ?: return null
-      val version = try {
-        pm.getPackageInfo(pkg, 0).versionName
-      } catch (e: Exception) {
-        null
-      }
-      mapOf("package" to pkg, "version" to version)
-    } catch (e: Exception) {
-      null
+    switch (ref.watch(savedBatchesProvider)) {
+      case AsyncData(:final value):
+        return _MaterialTabBody(value);
+      case AsyncError():
+        return const _MaterialTabBody(IList.empty());
+      case _:
+        return const _PuzzleTabScaffold(body: CenterLoadingIndicator());
     }
   }
 }
+
+/// Scaffold of the puzzle tab, shared by all states of the [savedBatchesProvider].
+class const _PuzzleTabScaffold({required final Widget body}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, _) {
+        if (!didPop) {
+          ref.read(currentBottomTabProvider.notifier).state = BottomTab.home;
+        }
+      },
+      child: PlatformScaffold(
+        appBar: PlatformAppBar(
+          title: Text(context.l10n.puzzles),
+          centerTitle: false,
+          
+        ),
+        body: body,
+      ),
+    );
+  }
+}
+
+class const _MaterialTabBody(final IList<PuzzleAngle> savedAngles) extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_MaterialTabBody> createState() => _MaterialTabBodyState();
+}
+
+class _MaterialTabBodyState() extends ConsumerState<_MaterialTabBody> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  late AnimatedListModel<PuzzleAngle> _angles;
+
+  @override
+  void initState() {
+    super.initState();
+    _angles = AnimatedListModel<PuzzleAngle>(
+      listKey: _listKey,
+      removedItemBuilder: _buildMainListRemovedItem,
+      initialItems: widget.savedAngles,
+      itemsOffset: 4,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _MaterialTabBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldKeys = ISet(oldWidget.savedAngles);
+    final newKeys = ISet(widget.savedAngles);
+
+    if (oldKeys != newKeys) {
+      final missings = oldKeys.difference(newKeys);
+      if (missings.isNotEmpty) {
+        for (final missing in missings) {
+          final index = _angles.indexOf(missing);
+          if (index != -1) {
+            _angles.removeAt(index);
+          }
+        }
+      }
+
+      final additions = newKeys.difference(oldKeys);
+      if (additions.isNotEmpty) {
+        for (final addition in additions) {
+          _angles.prepend(addition);
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isTablet = isTabletOrLarger(context);
+
+    Widget buildItem(BuildContext context, int index, Animation<double> animation) =>
+        _buildMainListItem(context, index, animation, (index) => _angles[index]);
+
+    return _PuzzleTabScaffold(
+      body: isTablet
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: AnimatedList(
+                    key: _listKey,
+                    initialItemCount: _angles.length,
+                    controller: puzzlesScrollController,
+                    itemBuilder: buildItem,
+                  ),
+                ),
+                Expanded(child: ListView(children: const [PuzzleHistoryWidget()])),
+              ],
+            )
+          : AnimatedList(
+              key: _listKey,
+              controller: puzzlesScrollController,
+              initialItemCount: _angles.length,
+              itemBuilder: buildItem,
+            ),
+    );
+  }
+}
+
+Widget _buildMainListItem(
+  BuildContext context,
+  int index,
+  Animation<double> animation,
+  PuzzleAngle Function(int index) getAngle,
+) {
+  switch (index) {
+    case 0:
+      return const _PuzzleMenu();
+    case 1:
+      return Padding(
+        padding: Styles.horizontalBodyPadding,
+        child: Text(context.l10n.puzzleDesc, style: Styles.sectionTitle),
+      );
+    case 2:
+      return const DailyPuzzle();
+    case 3:
+      return PuzzleAnglePreview(
+        angle: const PuzzleTheme(PuzzleThemeKey.mix),
+        onTap: () {
+          Navigator.of(
+            context,
+            rootNavigator: true,
+          ).push(PuzzleScreen.buildRoute(angle: const PuzzleTheme(PuzzleThemeKey.mix)));
+        },
+      );
+    default:
+      final angle = getAngle(index);
+      return PuzzleAnglePreview(
+        angle: angle,
+        onTap: () {
+          Navigator.of(context, rootNavigator: true).push(PuzzleScreen.buildRoute(angle: angle));
+        },
+      );
+  }
+}
+
+Widget _buildMainListRemovedItem(
+  PuzzleAngle angle,
+  BuildContext context,
+  Animation<double> animation,
+) {
+  return SizeTransition(
+    sizeFactor: animation,
+    child: PuzzleAnglePreview(angle: angle),
+  );
+}
+
+class const _PuzzleMenuListTile({
+  required final IconData icon,
+  required final String title,
+  required final String subtitle,
+  final String? badgeLabel,
+  final VoidCallback? onTap,
+  final bool enabled = true,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      enabled: enabled,
+      leading: Badge(
+        backgroundColor: ColorScheme.of(context).secondary,
+        textStyle: TextStyle(
+          color: ColorScheme.of(context).onSecondary,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+        isLabelVisible: badgeLabel != null,
+        label: (badgeLabel != null) ? Text(badgeLabel!) : null,
+        child: Icon(icon, color: ColorScheme.of(context).primary),
+      ),
+      title: Text(title, style: Styles.mainListTileTitle),
+      subtitle: Text(subtitle, maxLines: 3),
+      trailing: Theme.of(context).platform == TargetPlatform.iOS
+          ? const CupertinoListTileChevron()
+          : null,
+      onTap: onTap,
+    );
+  }
+}
+
+class const _PuzzleMenu() extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isOnline = ref.watch(isDeviceOnlineProvider);
+    final authUser = ref.watch(authControllerProvider);
+
+    return ListSection(
+      hasLeading: true,
+      children: [
+        _PuzzleMenuListTile(
+          icon: PuzzleIcons.opening,
+          title: context.l10n.puzzlePuzzleThemes,
+          subtitle: context.l10n.mobilePuzzleThemesSubtitle,
+          onTap: () {
+            Navigator.of(context).push(PuzzleThemesScreen.buildRoute());
+          },
+        ),
+        _PuzzleMenuListTile(
+          enabled: isOnline,
+          icon: LichessIcons.streak,
+          title: 'Puzzle Streak',
+          badgeLabel: switch (ref.watch(savedStreakScoreProvider)) {
+            AsyncData(:final value?) => value.toString(),
+            _ => null,
+          },
+          subtitle:
+              context.l10n.puzzleStreakDescription.characters
+                  .takeWhile((c) => c != '.')
+                  .toString() +
+              (context.l10n.puzzleStreakDescription.contains('.') ? '.' : ''),
+          onTap: isOnline
+              ? () {
+                  Navigator.of(context, rootNavigator: true).push(StreakScreen.buildRoute());
+                }
+              : null,
+        ),
+        _PuzzleMenuListTile(
+          enabled: isOnline,
+          icon: LichessIcons.storm,
+          title: 'Puzzle Storm',
+          subtitle: context.l10n.mobilePuzzleStormSubtitle,
+          onTap: isOnline
+              ? () {
+                  Navigator.of(context, rootNavigator: true).push(StormScreen.buildRoute());
+                }
+              : null,
+        ),
+        if (authUser != null) ...[
+          _PuzzleMenuListTile(
+            icon: Icons.assessment_outlined,
+            title: context.l10n.puzzlePuzzleDashboard,
+            subtitle: context.l10n.puzzlePuzzleDashboardDescription,
+            enabled: isOnline,
+            onTap: isOnline
+                ? () => Navigator.of(context).push(PuzzleDashboardScreen.buildRoute())
+                : null,
+          ),
+          _PuzzleMenuListTile(
+            icon: Icons.history_outlined,
+            title: context.l10n.puzzleHistory,
+            subtitle: 'Review your past puzzle attempts.',
+            enabled: isOnline,
+            onTap: isOnline
+                ? () => Navigator.of(
+                    context,
+                    rootNavigator: true,
+                  ).push(PuzzleHistoryScreen.buildRoute())
+                : null,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class const PuzzleHistoryWidget({final bool showHeader = true}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncData = ref.watch(puzzleRecentActivityProvider);
+    final isTablet = isTabletOrLarger(context);
+    return asyncData.when(
+      data: (recentActivity) {
+        if (recentActivity == null) {
+          return const SizedBox.shrink();
+        }
+        if (recentActivity.isEmpty) {
+          return ListSection(
+            header: showHeader ? Text(context.l10n.puzzleHistory) : null,
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                  child: Text(context.l10n.puzzleNoPuzzlesToShow),
+                ),
+              ),
+            ],
+          );
+        }
+
+        final maxItems = isTablet
+            ? _kNumberOfHistoryItemsOnTablet
+            : _kNumberOfHistoryItemsOnHandset;
+
+        return ListSection(
+          backgroundColor: Colors.transparent,
+          clipBehavior: Clip.none,
+          header: showHeader ? Text(context.l10n.puzzleHistory) : null,
+          onHeaderTap: showHeader
+              ? () => Navigator.of(context).push(PuzzleHistoryScreen.buildRoute())
+              : null,
+          children: [PuzzleHistoryPreview(recentActivity.take(maxItems).toIList(), maxRows: 5)],
+        );
+      },
+      error: (e, s) {
+        debugPrint('SEVERE: [PuzzleHistoryWidget] could not load puzzle history');
+        return const Padding(
+          padding: Styles.bodySectionPadding,
+          child: Text('Could not load Puzzle history.'),
+        );
+      },
+      loading: () => Shimmer(
+        child: ShimmerLoading(
+          isLoading: true,
+          child: ListSection.loading(itemsNumber: 5, header: true),
+        ),
+      ),
+    );
+  }
+}
+
+TextStyle _puzzlePreviewSubtitleStyle(BuildContext context) {
+  return TextStyle(
+    fontSize: 14.0,
+    color: DefaultTextStyle.of(context).style.color?.withValues(alpha: 0.6),
+  );
+}
+
+/// A widget that displays the daily puzzle.
+class const DailyPuzzle({super.key}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isOnline = ref.watch(isDeviceOnlineProvider);
+    final puzzle = ref.watch(dailyPuzzleProvider);
+
+    return puzzle.when(
+      data: (data) {
+        final preview = PuzzlePreview.fromPuzzle(data);
+        return SmallBoardPreview(
+          dimInDarkMode: true,
+          orientation: preview.orientation,
+          fen: preview.initialFen,
+          lastMove: preview.initialMove,
+          description: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(context.l10n.puzzlePuzzleOfTheDay, style: Styles.boardPreviewTitle),
+                  Text(
+                    context.l10n.puzzlePlayedXTimes(data.puzzle.plays).localizeNumbers(),
+                    style: _puzzlePreviewSubtitleStyle(context),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.today,
+                    size: 32,
+                    color: context.lichessColors.brag.withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      data.puzzle.sideToMove == Side.white
+                          ? context.l10n.whitePlays
+                          : context.l10n.blackPlays,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: textShade(context, 0.8)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          onTap: () {
+            if (!context.mounted) return;
+            Navigator.of(context, rootNavigator: true).push(
+              PuzzleScreen.buildRoute(angle: const PuzzleTheme(PuzzleThemeKey.mix), puzzle: data),
+            );
+          },
+        );
+      },
+      loading: () => isOnline
+          ? const Shimmer(
+              child: ShimmerLoading(isLoading: true, child: SmallBoardPreview.loading()),
+            )
+          : const SizedBox.shrink(),
+      error: (error, _) {
+        return isOnline
+            ? const Padding(
+                padding: Styles.bodySectionPadding,
+                child: Text('Could not load the daily puzzle.'),
+              )
+            : const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+/// A widget that displays a preview of a puzzle angle batch.
+class const PuzzleAnglePreview({
+  required final PuzzleAngle angle,
+  final VoidCallback? onTap,
+  super.key,
+}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final puzzle = ref.watch(nextPuzzlePreviewProvider(angle));
+    final flatOpenings = ref.watch(flatOpeningsListProvider);
+    final isOnline = ref.watch(isDeviceOnlineProvider);
+    // Only useful offline: online the queue is refilled as puzzles are solved, so the number of
+    // puzzles left says nothing about what the user can still do.
+    final savedCount = ref.watch(savedBatchNbUnsolvedProvider(angle)).value ?? 0;
+
+    Widget buildPuzzlePreview(Puzzle? puzzle, {bool loading = false}) {
+      final preview = puzzle != null ? PuzzlePreview.fromPuzzle(puzzle) : null;
+
+      return loading
+          ? const Shimmer(
+              child: ShimmerLoading(isLoading: true, child: SmallBoardPreview.loading()),
+            )
+          : Slidable(
+              dragStartBehavior: DragStartBehavior.start,
+              enabled: angle != const PuzzleTheme(PuzzleThemeKey.mix),
+              endActionPane: ActionPane(
+                motion: const StretchMotion(),
+                children: [
+                  SlidableAction(
+                    icon: Icons.delete,
+                    onPressed: (context) async {
+                      final service = await ref.read(puzzleServiceProvider.future);
+                      if (context.mounted) {
+                        await service.deleteBatch(
+                          userId: ref.read(authControllerProvider)?.user.id,
+                          angle: angle,
+                        );
+                        ref.invalidate(savedBatchesProvider);
+                      }
+                    },
+                    spacing: 8.0,
+                    backgroundColor: context.lichessColors.error,
+                    foregroundColor: Colors.white,
+                    label: context.l10n.delete,
+                  ),
+                ],
+              ),
+              child: SmallBoardPreview(
+                dimInDarkMode: true,
+                orientation: preview?.orientation ?? Side.white,
+                fen: preview?.initialFen ?? kEmptyFEN,
+                lastMove: preview?.initialMove,
+                description: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: switch (angle) {
+                        PuzzleTheme(themeKey: final themeKey) => [
+                          Text(
+                            themeKey.l10n(context.l10n).name,
+                            style: Styles.boardPreviewTitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            themeKey.l10n(context.l10n).description,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              height: 1.2,
+                              fontSize: 12.0,
+                              color: DefaultTextStyle.of(context).style.color
+                                  ?.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                        PuzzleOpening(key: final openingKey) => [
+                          Text(
+                            flatOpenings.value
+                                    ?.firstWhere(
+                                      (o) => o.key == openingKey,
+                                      orElse: () => (
+                                        key: openingKey,
+                                        name: openingKey.replaceAll('_', ''),
+                                        count: 0,
+                                      ),
+                                    )
+                        
