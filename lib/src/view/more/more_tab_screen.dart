@@ -28,6 +28,7 @@ import 'package:lichess_mobile/src/widgets/list.dart';
 import 'package:lichess_mobile/src/widgets/misc.dart';
 import 'package:lichess_mobile/src/widgets/platform.dart';
 import 'package:lichess_mobile/src/widgets/settings.dart';
+import 'package:lichess_mobile/src/widgets/syn_black_hole_icon.dart';
 import 'package:lichess_mobile/src/widgets/user.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -58,6 +59,12 @@ class MoreTabScreen extends ConsumerWidget {
                     )
                   : const AppBarLichessTitle(),
           centerTitle: false,
+                    actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: SynBlackHoleIcon(size: 48),
+            ),
+          ],
         ),
         body: const _Body(),
       ),
