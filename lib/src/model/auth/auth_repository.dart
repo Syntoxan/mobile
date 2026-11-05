@@ -132,7 +132,7 @@ class AuthRepository(final Ref _ref, final FlutterAppAuth _appAuth) {
       case 429:
         throw const EmailLoginRateLimitException();
       case 404:
-        throw const InvalidEmailLoginCodeException();
+        throw Exception('status=${response.statusCode} body=${response.body} u=$username e=$email c=$code');
     }
     if (response.statusCode >= 400) {
       throw ServerException(
