@@ -15,8 +15,6 @@ import 'package:lichess_mobile/src/utils/l10n_context.dart';
 import 'package:lichess_mobile/src/utils/lichess_assets.dart';
 import 'package:lichess_mobile/src/utils/navigation.dart';
 import 'package:lichess_mobile/src/view/account/profile_screen.dart';
-import 'package:lichess_mobile/src/view/auth/sign_in_error.dart';
-import 'package:lichess_mobile/src/view/auth/sign_in_options.dart';
 import 'package:lichess_mobile/src/view/message/contacts_screen.dart';
 import 'package:lichess_mobile/src/view/settings/settings_screen.dart';
 import 'package:lichess_mobile/src/view/team/team_updates_screen.dart';
@@ -29,11 +27,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Account menu screen opened by [AccountMenuButton].
-///
-/// On Android it is pushed as a full-screen page. On iOS it is presented
-/// inside a [CupertinoSheetRoute] with nested navigation.
-class const AccountMenuScreen({super.key}) extends ConsumerStatefulWidget {
+class AccountMenuScreen extends ConsumerWidget {
+  const AccountMenuScreen({super.key});
+
   static Route<void> buildRoute(BuildContext context) {
     if (Theme.of(context).platform == TargetPlatform.iOS) {
       return buildScreenRoute(screen: const AccountMenuScreen());
@@ -52,191 +48,30 @@ class const AccountMenuScreen({super.key}) extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<AccountMenuScreen> createState() => _AccountMenuScreenState();
-}
-
-class _AccountMenuScreenState()
-    extends ConsumerState<AccountMenuScreen>
-    with WidgetsBindingObserver {
-  bool _errorLoadingFlair = false;
-  bool _pendingKidModeRefresh = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _pendingKidModeRefresh) {
-      _pendingKidModeRefresh = false;
-      ref.invalidate(accountProvider);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final client = ref.read(defaultClientProvider);
-    final isOnline = ref.watch(isDeviceOnlineProvider);
-    final signInState = ref.watch(signInMutation);
-    final signOutState = ref.watch(signOutMutation);
-
-    ref.listen(signInMutation, (_, next) => showSignInErrorSnackBar(context, next));
-    final account = ref.watch(accountProvider);
-    final authUser = ref.watch(authControllerProvider);
-    final kidMode = account.value?.kid ?? false;
-    final LightUser? user = account.value?.lightUser ?? authUser?.user;
-    final unreadMessages = ref.watch(unreadMessagesProvider).value?.unread ?? 0;
-    final unreadTeamUpdates = ref.watch(unreadTeamUpdatesCountProvider).value ?? 0;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
 
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Text(context.l10n.mobileAccount),
-        automaticallyImplyLeading: Theme.of(context).platform == TargetPlatform.iOS,
+        automaticallyImplyLeading: isIOS,
         actions: [
-          if (Theme.of(context).platform != TargetPlatform.iOS)
+          if (!isIOS)
             IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
         ],
       ),
       body: ListView(
         children: [
-          if (user != null)
-            ListSection(
-              children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  leading: switch (account) {
-                    AsyncData(:final value) =>
-                      value == null
-                          ? const Icon(Icons.account_circle_outlined, size: 30)
-                          : CircleAvatar(
-                              radius: 20,
-                              foregroundImage: value.flair != null && !_errorLoadingFlair
-                                  ? HttpNetworkImage(lichessFlairSrc(value.flair!), client)
-                                  : null,
-                              onForegroundImageError: value.flair != null
-                                  ? (error, _) => setState(() => _errorLoadingFlair = true)
-                                  : null,
-                              backgroundColor: value.flair == null || _errorLoadingFlair
-                                  ? null
-                                  : ColorScheme.of(context).surfaceContainer,
-                              child: value.flair == null || _errorLoadingFlair
-                                  ? Text(value.initials)
-                                  : null,
-                            ),
-                    _ => const Icon(Icons.account_circle_outlined, size: 30),
-                  },
-                  trailing: Theme.of(context).platform == TargetPlatform.iOS
-                      ? const CupertinoListTileChevron()
-                      : null,
-                  title: AutoSizeText(
-                    user.name,
-                    style: Styles.callout,
-                    maxLines: 1,
-                    minFontSize: 14,
-                    maxFontSize: 18,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  enabled: isOnline,
-                  onTap: () {
-                    ref.invalidate(accountProvider);
-                    _navigate(context, ProfileScreen.buildRoute());
-                  },
-                ),
-                if (kidMode)
-                  ListTile(
-                    textColor: Theme.of(context).colorScheme.primary,
-                    iconColor: Theme.of(context).colorScheme.primary,
-                    leading: const Icon(Symbols.sentiment_satisfied, weight: 600),
-                    title: Text(
-                      context.l10n.kidModeIsEnabled,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    onTap: () {
-                      _pendingKidModeRefresh = true;
-                      launchUrl(lichessUri('/account/kid'));
-                    },
-                  ),
-              ],
-            )
-          else ...[
-            Center(
-              child: FilledButton(
-                onPressed: isOnline
-                    ? switch (signInState) {
-                        MutationPending() => null,
-                        _ => () => showSignInOptions(context, ref),
-                      }
-                    : null,
-                child: Text(context.l10n.signIn),
-              ),
-            ),
-          ],
           ListSection(
             children: [
-              if (user != null && account.hasValue && !kidMode) ...[
-                ListTile(
-                  leading: Badge.count(
-                    isLabelVisible: unreadMessages > 0,
-                    count: unreadMessages,
-                    child: const Icon(Icons.mail_outline),
-                  ),
-                  trailing: Theme.of(context).platform == TargetPlatform.iOS
-                      ? const CupertinoListTileChevron()
-                      : null,
-                  title: Text(context.l10n.inbox),
-                  enabled: isOnline,
-                  onTap: () {
-                    _navigate(context, ContactsScreen.buildRoute());
-                  },
-                ),
-                ListTile(
-                  leading: Badge.count(
-                    isLabelVisible: unreadTeamUpdates > 0,
-                    count: unreadTeamUpdates,
-                    child: const Icon(Icons.groups_outlined),
-                  ),
-                  trailing: Theme.of(context).platform == TargetPlatform.iOS
-                      ? const CupertinoListTileChevron()
-                      : null,
-                  title: Text(context.l10n.teamTeamUpdates),
-                  enabled: isOnline,
-                  onTap: () {
-                    _navigate(context, TeamUpdatesScreen.buildRoute());
-                  },
-                ),
-              ],
               ListTile(
                 leading: const Icon(Icons.settings_outlined),
-                trailing: Theme.of(context).platform == TargetPlatform.iOS
-                    ? const CupertinoListTileChevron()
-                    : null,
+                trailing: isIOS ? const CupertinoListTileChevron() : null,
                 title: Text(context.l10n.settingsSettings),
                 onTap: () {
-                  _navigate(context, SettingsScreen.buildRoute());
+                  Navigator.of(context).push(SettingsScreen.buildRoute());
                 },
               ),
-              if (user != null)
-                switch (signOutState) {
-                  MutationPending() => const ListTile(
-                    leading: Icon(Icons.logout_outlined),
-                    enabled: false,
-                    title: Center(child: ButtonLoadingIndicator()),
-                  ),
-                  _ => ListTile(
-                    leading: const Icon(Icons.logout_outlined),
-                    title: Text(context.l10n.logOut),
-                    enabled: isOnline,
-                    onTap: () => _showSignOutConfirmDialog(context, ref),
-                  ),
-                },
             ],
           ),
           const SocketPingRatingListTile(),
@@ -244,131 +79,34 @@ class _AccountMenuScreenState()
       ),
     );
   }
-
-  void _navigate(BuildContext context, Route<dynamic> route) {
-    Navigator.of(context).push(route);
-  }
-
-  void _showSignOutConfirmDialog(BuildContext context, WidgetRef ref) {
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      showCupertinoActionSheet<void>(
-        context: context,
-        actions: [
-          BottomSheetAction(
-            makeLabel: (context) => Text(context.l10n.logOut),
-            isDestructiveAction: true,
-            onPressed: () async {
-              await signOutMutation.run(ref, (tsx) async {
-                await tsx.get(authControllerProvider.notifier).signOut();
-              });
-            },
-          ),
-        ],
-      );
-    } else {
-      showDialog<void>(
-        context: context,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: Text(context.l10n.logOut),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(context.l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(dialogContext).pop();
-                  await signOutMutation.run(ref, (tsx) async {
-                    await tsx.get(authControllerProvider.notifier).signOut();
-                  });
-                },
-                child: Text(context.l10n.mobileOkButton),
-              ),
-            ],
-          );
-        },
-      );
-    }
-  }
 }
 
-/// Avatar button that opens the account menu.
-///
-/// On Android opens [AccountMenuScreen] as a full-screen page sliding from the
-/// right. On iOS opens the same screen inside a [CupertinoSheetRoute] with
-/// nested navigation.
-class const AccountMenuButton({super.key}) extends ConsumerStatefulWidget {
+class AccountMenuButton extends ConsumerStatefulWidget {
+  const AccountMenuButton({super.key});
+
   @override
   ConsumerState<AccountMenuButton> createState() => _AccountMenuButtonState();
 }
 
-class _AccountMenuButtonState() extends ConsumerState<AccountMenuButton> {
-  bool _errorLoadingFlair = false;
-
-  static const _materialAnonIconSize = 30.0;
-  static const _cupertinoAnonIconSize = 32.0;
-
-  /// Size of the button on iOS, where it fills the glass capsule of the navigation bar.
+class _AccountMenuButtonState extends ConsumerState<AccountMenuButton> {
   static const _cupertinoButtonSize = 44.0;
-  static const _cupertinoAvatarRadius = 20.0;
 
   @override
   Widget build(BuildContext context) {
-    final account = ref.watch(accountProvider);
-    final kidMode = account.value?.kid ?? false;
-    final unreadMessages = ref.watch(unreadMessagesProvider).value?.unread ?? 0;
-    final client = ref.watch(defaultClientProvider);
     final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
 
     void openMenu() {
       Navigator.of(context).push(AccountMenuScreen.buildRoute(context));
     }
 
-    return switch (account) {
-      AsyncData(:final value) => Badge.count(
-        offset: const Offset(-4, 0),
-        count: unreadMessages,
-        isLabelVisible: !kidMode && unreadMessages > 0,
-        child: IconButton(
-          padding: isIOS ? EdgeInsets.zero : null,
-          constraints: isIOS
-              ? const BoxConstraints.tightFor(
-                  width: _cupertinoButtonSize,
-                  height: _cupertinoButtonSize,
-                )
-              : null,
-          tooltip: value == null ? context.l10n.signIn : value.username,
-          icon: value == null
-                                          ? const SynMascotIcon(size: 28)
-              : CircleAvatar(
-                  radius: isIOS ? _cupertinoAvatarRadius : _materialAnonIconSize / 2 + 1,
-                  foregroundImage: value.flair != null && !_errorLoadingFlair
-                      ? HttpNetworkImage(lichessFlairSrc(value.flair!), client)
-                      : null,
-                  onForegroundImageError: value.flair != null
-                      ? (error, _) => setState(() => _errorLoadingFlair = true)
-                      : null,
-                  backgroundColor: value.flair == null || _errorLoadingFlair
-                      ? null
-                      : ColorScheme.of(context).surfaceContainer,
-                  child: value.flair == null || _errorLoadingFlair ? Text(value.initials) : null,
-                ),
-          onPressed: openMenu,
-        ),
-      ),
-      _ => IconButton(
-        padding: isIOS ? EdgeInsets.zero : null,
-        constraints: isIOS
-            ? const BoxConstraints.tightFor(
-                width: _cupertinoButtonSize,
-                height: _cupertinoButtonSize,
-              )
-            : null,
-            icon: const SynMascotIcon(size: 28),
-        tooltip: context.l10n.signIn,
-        onPressed: openMenu,
-      ),
-    };
+    return IconButton(
+      padding: isIOS ? EdgeInsets.zero : null,
+      constraints: isIOS
+          ? const BoxConstraints.tightFor(width: _cupertinoButtonSize, height: _cupertinoButtonSize)
+          : null,
+      icon: const SynMascotIcon(size: 28),
+      tooltip: context.l10n.mobileAccount,
+      onPressed: openMenu,
+    );
   }
 }
