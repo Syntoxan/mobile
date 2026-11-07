@@ -23,6 +23,7 @@ import 'package:lichess_mobile/src/view/relation/friend_screen.dart';
 import 'package:lichess_mobile/src/view/settings/settings_screen.dart';
 import 'package:lichess_mobile/src/view/team/team_updates_screen.dart';
 import 'package:lichess_mobile/src/view/user/player_screen.dart';
+import 'package:lichess_mobile/src/widgets/analysis_sword_painter.dart';
 import 'package:lichess_mobile/src/widgets/feedback.dart';
 import 'package:lichess_mobile/src/widgets/list.dart';
 import 'package:lichess_mobile/src/widgets/misc.dart';
@@ -99,7 +100,7 @@ class _Body extends ConsumerWidget {
                 onTap: () => Navigator.of(context).push(ImportPgnScreen.buildRoute()),
               ),
               ListTile(
-                leading: const Icon(Icons.biotech_outlined),
+                leading: const SwordIcon(size: 28),
                 trailing: Theme.of(context).platform == TargetPlatform.iOS
                     ? const CupertinoListTileChevron()
                     : null,
