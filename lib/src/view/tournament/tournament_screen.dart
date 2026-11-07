@@ -5,7 +5,7 @@ class TournamentScreen extends StatelessWidget {
 
   static const String routeName = '/tournament';
 
-  static Route<void> buildRoute(Object? tournamentId) {
+  static Route<void> buildRoute(Object? tournamentId, {Object? initialPlayerId}) {
     return MaterialPageRoute<void>(
       settings: const RouteSettings(name: routeName),
       builder: (_) => const TournamentScreen(),
