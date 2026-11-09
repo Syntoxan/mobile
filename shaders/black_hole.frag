@@ -4,13 +4,46 @@ precision highp float;
 #include <flutter/runtime_effect.glsl>
 
 uniform vec2 uSize;
+uniform float uTime;   // seconds
+uniform float uDark;   // 1.0 = dark mode, 0.0 = light mode
 
 out vec4 fragColor;
 
-vec2 synBez(vec2 p, vec2 r, vec2 a, vec2 b, vec2 c, vec2 d)
+#define VIEW 376.0
+#define CAP 28.0
+#define PI2 6.28318530718
+
+float pw(float x, float n)
 {
+    return pow(max(x, 0.0), n);
+}
+
+float hash21(vec2 q)
+{
+    q = fract(q * vec2(123.34, 456.21));
+    q += dot(q, q + 45.32);
+    return fract(q.x * q.y);
+}
+
+vec3 neon(float ph)
+{
+    float cr = 0.5 + 0.5 * cos(PI2 * ph);
+    return vec3(cr, 0.95 - 0.8 * cr, 1.0 - 0.18 * cr);
+}
+
+// r.x = best dist^2, r.y = inside sign, r.zw = vector from nearest edge point to p
+vec4 synBez(vec2 p, vec4 r, vec2 a, vec2 b, vec2 c, vec2 d)
+{
+    vec2 lo = min(min(a, b), min(c, d));
+    vec2 hi = max(max(a, b), max(c, d));
+    vec2 gap = max(max(lo - p, p - hi), vec2(0.0));
+    bool needD = dot(gap, gap) < r.x;
+    bool needX = (p.y >= lo.y) && (p.y <= hi.y) && (p.x < hi.x);
+    if (!needD && !needX) return r;
+
     float dm = r.x;
     float s = r.y;
+    vec2 qb = r.zw;
     vec2 g = a;
     for (int i = 1; i <= 16; i++)
     {
@@ -18,23 +51,33 @@ vec2 synBez(vec2 p, vec2 r, vec2 a, vec2 b, vec2 c, vec2 d)
         float m = 1.0 - t;
         vec2 h = m * m * m * a + 3.0 * m * m * t * b + 3.0 * m * t * t * c + t * t * t * d;
         vec2 e = h - g;
-        vec2 w = p - g;
-        vec2 q = w - e * clamp(dot(w, e) / max(dot(e, e), 1.0e-9), 0.0, 1.0);
-        dm = min(dm, dot(q, q));
+        if (needD)
+        {
+            vec2 w = p - g;
+            vec2 q = w - e * clamp(dot(w, e) / max(dot(e, e), 1.0e-9), 0.0, 1.0);
+            float dq = dot(q, q);
+            if (dq < dm)
+            {
+                dm = dq;
+                qb = q;
+            }
+        }
         if ((g.y > p.y) != (h.y > p.y) && p.x < g.x + (p.y - g.y) * e.x / e.y) s = -s;
         g = h;
     }
-    return vec2(dm, s);
+    return vec4(dm, s, qb);
 }
 
 #define SYN_B(a, b, c, d, e, f) r = synBez(p, r, u, vec2(a, b), vec2(c, d), vec2(e, f)); u = vec2(e, f);
 
 void main()
 {
-    vec2 p = FlutterFragCoord().xy / uSize * 324.0 + 94.0;
-    float k = 324.0 / uSize.x;
+    vec2 C = vec2(256.0, 257.0);
+    vec2 p = FlutterFragCoord().xy / uSize * VIEW + (C - 0.5 * VIEW);
+    float k = VIEW / uSize.x;
+
     vec2 u = vec2(284.99, 329.19);
-    vec2 r = vec2(1.0e12, 1.0);
+    vec4 r = vec4(CAP * CAP, 1.0, 0.0, 0.0);
     SYN_B(302.87,327.18,322.02,322.78,335.84,310.47)SYN_B(348.59,299.11,354.88,282.84,356.82,266.17)
     SYN_B(357.04,264.32,357.05,262.45,357.19,260.59)SYN_B(357.90,251.17,357.60,241.81,354.78,232.73)
     SYN_B(352.07,224.01,347.26,216.39,341.26,209.58)SYN_B(342.25,206.26,343.20,202.95,343.74,199.52)
@@ -62,7 +105,93 @@ void main()
     SYN_B(297.27,407.21,296.07,405.46,295.50,403.48)SYN_B(294.65,400.57,295.18,388.15,295.23,384.33)
     SYN_B(295.30,377.67,295.33,371.00,295.33,364.33)SYN_B(295.33,354.38,295.15,344.14,289.69,335.40)
     SYN_B(288.31,333.18,286.64,331.21,284.99,329.19)
+
     float dw = sqrt(r.x) * r.y;
-    float aw = clamp(0.5 - dw / k, 0.0, 1.0);
-    fragColor = vec4(vec3(aw), aw);
+    float aa = clamp(0.5 - dw / k, 0.0, 1.0);
+    float depth = max(-dw, 0.0);
+    float away = max(dw, 0.0);
+    vec2 n = r.zw * r.y / max(length(r.zw), 1.0e-4);
+
+    float T = uTime;
+    float dk = uDark;
+    float lod = clamp((2.2 - k) / 1.0, 0.0, 1.0);
+    float ign = smoothstep(0.0, 1.4, T);
+    vec2 uv = (p - C) / 160.0;
+    float rad = length(uv);
+    float ang = atan(uv.y, uv.x);
+    float turn = ang / PI2;
+
+    // ---- 3D bevel lighting (normal comes free from the SDF)
+    float bt = clamp(depth / 12.0, 0.0, 1.0);
+    float tilt = (1.0 - bt) * (1.0 - bt) * 1.7;
+    vec3 N = normalize(vec3(n * tilt, 1.0));
+    vec3 V = vec3(0.0, 0.0, 1.0);
+    float la = T * 0.55;
+    vec3 L1 = normalize(vec3(cos(la) * 0.8, sin(la) * 0.8, 0.55));
+    vec3 L2 = normalize(vec3(-0.6, -0.65, 0.5));
+    float dif = clamp(dot(N, L1) * 0.6 + dot(N, L2) * 0.4, 0.0, 1.0);
+    float s1 = pw(dot(N, normalize(L1 + V)), 36.0);
+    float s2 = pw(dot(N, normalize(L2 + V)), 36.0);
+    float fres = pw(1.0 - N.z, 1.5);
+
+    // ---- metal body
+    float conic = 0.5 + 0.5 * cos(ang * 2.0 - T * 0.4 + rad * 1.6);
+    conic *= conic;
+    float brush = 0.5 + 0.5 * sin(rad * 110.0 + sin(ang * 7.0) * 2.0);
+    float lum = 0.28 + 0.36 * conic + 0.32 * dif - 0.10 * uv.y + 0.07 * (brush - 0.5) * lod;
+    vec3 cLo = mix(vec3(0.035, 0.045, 0.075), vec3(0.30, 0.34, 0.44), dk);
+    vec3 cHi = mix(vec3(0.42, 0.46, 0.62), vec3(0.93, 0.96, 1.00), dk);
+    vec3 body = mix(cLo, cHi, clamp(lum, 0.0, 1.0));
+    vec3 aur = neon(rad * 0.45 - T * 0.05 + uv.x * 0.2);
+    vec3 irid = neon(fres * 1.3 + turn + T * 0.07);
+    body *= 0.86 + 0.28 * aur;
+    body += aur * mix(0.09, 0.05, dk) * (0.35 + 0.65 * conic);
+    body += irid * fres * mix(0.55, 0.40, dk);
+    body += vec3(1.0) * (s1 + 0.7 * s2) * mix(0.90, 0.75, dk);
+
+    // ---- engraved lines + micro hatch
+    vec3 gcol = mix(vec3(0.70, 0.80, 1.00), vec3(0.04, 0.05, 0.09), dk);
+    float gw = max(1.0, k * 0.9);
+    float x1 = (depth - 17.0) / gw;
+    float x2 = (depth - 20.5) / (gw * 0.7);
+    float groove = exp(-x1 * x1) * 0.55 + exp(-x2 * x2) * 0.25;
+    float band = smoothstep(22.5, 23.5, depth) * (1.0 - smoothstep(26.0, 27.0, depth));
+    float hatch = step(0.5, fract((p.x + p.y) / 4.0));
+    body = mix(body, gcol, clamp(groove * 0.6 + band * hatch * 0.22 * lod, 0.0, 1.0));
+
+    // ---- light sweep + sparkles
+    float sd = dot(uv, vec2(0.7071, -0.7071)) - (-1.9 + fract(T / 4.2) * 5.2);
+    float sweep = exp(-sd * sd * 24.0) + 0.6 * exp(-(sd + 0.24) * (sd + 0.24) * 260.0);
+    body += mix(vec3(1.0), irid, 0.5) * sweep * mix(0.50, 0.30, dk) * ign * (0.55 + 1.2 * fres);
+    vec2 cp = p / 13.0;
+    vec2 cid = floor(cp);
+    vec2 cf = fract(cp) - 0.5;
+    float h1 = hash21(cid);
+    vec2 dq = cf - (vec2(hash21(cid + 17.3), hash21(cid + 41.7)) - 0.5) * 0.24;
+    float tw = pw(0.5 + 0.5 * sin(T * (1.3 + h1 * 2.2) + h1 * 60.0), 8.0);
+    float star = exp(-dot(dq, dq) * 420.0)
+        + 0.55 * max(0.0, 1.0 - 14.0 * abs(dq.x)) * max(0.0, 1.0 - 3.4 * abs(dq.y))
+        + 0.55 * max(0.0, 1.0 - 14.0 * abs(dq.y)) * max(0.0, 1.0 - 3.4 * abs(dq.x));
+    body += vec3(1.0) * step(0.84, h1) * tw * star * 0.95;
+
+    // ---- neon aura outside + hologram haze inside the cat
+    float pulse = pw(0.5 + 0.5 * cos(ang - T * 1.1), 6.0);
+    vec3 hue = neon(turn + T * 0.08 + away * 0.004);
+    float hot = exp(-away / 1.3);
+    float glow = (0.55 * exp(-away / 3.5) + 0.40 * exp(-away / 11.0)) * (0.45 + 1.1 * pulse);
+    glow *= (1.0 - smoothstep(CAP * 0.55, CAP, away)) * ign * mix(0.60, 1.0, dk);
+    vec3 gC = clamp(hue * mix(0.80, 1.0, dk) + vec3(hot * 0.5 * dk), 0.0, 1.0);
+    float gA = clamp(glow, 0.0, 0.95);
+
+    float inDisc = 1.0 - smoothstep(0.90, 1.0, length((p - C) / vec2(160.0, 154.0)));
+    float scan = 0.5 + 0.5 * sin(p.y * 0.9 - T * 2.4);
+    float holeA = inDisc * (0.06 + 0.06 * scan * lod) * ign;
+    vec3 holeC = mix(vec3(0.20, 0.62, 1.00), vec3(0.78, 0.32, 1.00), clamp(0.5 + 0.5 * uv.y, 0.0, 1.0)) * mix(0.80, 1.0, dk);
+
+    // ---- composite (premultiplied alpha)
+    vec3 outP = gC * gA + holeC * holeA * (1.0 - gA);
+    float outA = gA + holeA * (1.0 - gA);
+    vec3 P = clamp(body, 0.0, 1.0) * aa + outP * (1.0 - aa);
+    float A = aa + outA * (1.0 - aa);
+    fragColor = vec4(P, A);
 }
